@@ -1,5 +1,6 @@
 import React from 'react';
 import Newsletter from "../../components/Newsletter/Newsletter";
+import Gallery from '../../components/Gallery/Gallery';
 
 
 const Home = () => {
@@ -33,7 +34,7 @@ const Home = () => {
 
             {/* Gallery Section */}
             <div id="gallery">
-                 {/* <Gallery /> */}
+                 <Gallery />
             </div>
 
             {/* Newsletter Section */}
