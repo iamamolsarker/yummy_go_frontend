@@ -2,6 +2,7 @@ import React from "react";
 import Newsletter from "../../components/Newsletter/Newsletter";
 import Gallery from "../../components/Gallery/Gallery";
 import Faq from "../../components/home/Faq";
+import Feature from "../../components/home/Feature";
 
 const Home = () => {
   return (
@@ -39,6 +40,7 @@ const Home = () => {
       <div id="gallery">
         <Gallery />
       </div>
+      <Feature></Feature>
 
       <Faq></Faq>
       {/* Newsletter Section */}

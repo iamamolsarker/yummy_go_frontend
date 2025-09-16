@@ -1,3 +1,7 @@
+// NOTE: This component is completed by Abrar Shazid. 
+// Reach out to me if any problem occurs. 
+// (For development use only, remove before production)
+
 import React, { useState } from "react";
 
 interface FAQItem {
