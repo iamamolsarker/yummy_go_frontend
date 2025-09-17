@@ -1,4 +1,4 @@
-import React, { FormEvent, useState, useEffect } from "react";
+import React, { FormEvent, useState } from "react";
 import axios from "axios";
 
 const Newsletter: React.FC = () => {
@@ -37,7 +37,7 @@ const Newsletter: React.FC = () => {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage:
-            "url('https://i.ibb.co.com/zHDcNLwB/Newsletter.png')",
+            "url('https://i.ibb.co/zHDcNLwB/Newsletter.png')",
           backgroundAttachment: "fixed",
         }}
       ></div>
@@ -47,11 +47,11 @@ const Newsletter: React.FC = () => {
 
       {/* Content Container */}
       <div className="relative z-10 flex items-center justify-center h-full px-4">
-        <div className="bg-white/20 backdrop-blur-lg p-8 md:p-12 rounded-3xl text-center max-w-2xl shadow-2xl border border-white/30">
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-yellow-400">
+        <div className="bg-white/10 backdrop-blur-lg p-8 md:p-12 rounded-[10px] text-center max-w-2xl shadow-2xl border border-white/20">
+          <h2 className="text-[40px] md:text-[48px] font-extrabold mb-4 text-white">
             📩 Join Our Newsletter
           </h2>
-          <p className="text-gray-100 text-lg md:text-xl mb-8">
+          <p className="text-gray-200 text-[16px] md:text-[20px] mb-8">
             Get exclusive offers, tasty updates, and delicious news straight to your inbox.
           </p>
 
@@ -65,18 +65,18 @@ const Newsletter: React.FC = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
-              className="flex-grow bg-white/90 px-6 py-3 rounded-full text-gray-900 placeholder-gray-500 shadow-md transition duration-300 focus:outline-none focus:ring-4 focus:ring-yellow-400"
+              className="flex-grow bg-white/90 px-6 py-3 rounded-[10px] text-[#363636] placeholder-[#7c848a] shadow-md transition duration-300 focus:outline-none focus:ring-4 focus:ring-[#EF451C]"
             />
             <button
               type="submit"
-              className="bg-yellow-400 hover:bg-yellow-500 px-8 py-3 rounded-full font-bold text-gray-900 shadow-md transition duration-300 transform hover:scale-105"
+              className="bg-[#EF451C] hover:bg-opacity-90 px-8 py-3 rounded-[10px] font-bold text-white shadow-md transition duration-300 transform hover:scale-105"
             >
               Subscribe
             </button>
           </form>
 
           {message && (
-            <p className="mt-6 text-white font-semibold text-lg">{message}</p>
+            <p className="mt-6 text-white font-semibold text-[16px]">{message}</p>
           )}
         </div>
       </div>
