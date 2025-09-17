@@ -1,6 +1,23 @@
 import React from 'react';
 
-const GalleryItem = ({ src, alt, category, title }) => (
+// Define the structure for the props of GalleryItem component.
+interface GalleryItemProps {
+    src: string;
+    alt: string;
+    category: string;
+    title: string;
+}
+
+// Define the structure for each object in the gallery data array.
+interface GalleryDataItem {
+    id: number;
+    src: string;
+    alt: string;
+    category: string;
+    title: string;
+}
+
+const GalleryItem: React.FC<GalleryItemProps> = ({ src, alt, category, title }) => (
     <div className="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer">
         <img src={src} alt={alt} className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110" />
         <div className="absolute inset-0 bg-gradient-to-t from-yellow-500 via-orange-500 to-orange-600 bg-opacity-80 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
@@ -10,8 +27,8 @@ const GalleryItem = ({ src, alt, category, title }) => (
     </div>
 );
 
-const Gallery = () => {
-    const galleryData = [
+const Gallery: React.FC = () => {
+    const galleryData: GalleryDataItem[] = [
         { id: 1, src: 'https://placehold.co/600x400/E9967A/FFFFFF?text=Fresh+Salad', alt: 'Fresh Salad', category: 'Healthy', title: 'Green Delight' },
         { id: 2, src: 'https://placehold.co/600x400/8B4513/FFFFFF?text=Grilled+Steak', alt: 'Grilled Steak', category: 'Main Course', title: 'Sizzling Steak' },
         { id: 3, src: 'https://placehold.co/600x400/FFA07A/FFFFFF?text=Fruit+Tart', alt: 'Fruit Tart', category: 'Dessert', title: 'Sweet Heaven' },
@@ -45,4 +62,4 @@ const Gallery = () => {
     );
 };
 
-export default Gallery
+export default Gallery;

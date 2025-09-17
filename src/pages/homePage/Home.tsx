@@ -3,6 +3,7 @@ import Newsletter from "../../components/Newsletter/Newsletter";
 import Gallery from "../../components/Gallery/Gallery";
 import Faq from "../../components/home/Faq";
 import Feature from "../../components/home/Feature";
+import OurCustomersSaying from "../../components/OurCustomersSaying/OurCustomersSaying";
 
 const Home = () => {
   return (
@@ -43,6 +44,10 @@ const Home = () => {
       <Feature></Feature>
 
       <Faq></Faq>
+
+      {/* OurCustomersSaying Section */}
+      <OurCustomersSaying />
+
       {/* Newsletter Section */}
       <Newsletter />
     </main>
