@@ -8,7 +8,7 @@ import deliveryImg from "../../assets/home/delivery.be81f682.svg"
 import trackingImg from "../../assets/home/location.bf59f976.svg"
 import favImg from "../../assets/home/mobile.73da0fee.svg"
 
-const Feature = () => {
+const Feature:React.FC = () => {
   return (
     <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="container mx-auto px-4">
