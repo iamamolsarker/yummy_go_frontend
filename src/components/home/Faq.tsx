@@ -14,7 +14,7 @@ interface FAQData {
   foodman: FAQItem[];
 }
 
-const Faq= () => {
+const Faq: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"customer" | "foodman">("customer");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
