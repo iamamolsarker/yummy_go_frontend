@@ -1,40 +1,34 @@
-import React from 'react';
+import React from "react";
 
 const HeroSection: React.FC = () => {
-    return (
-        <section
-            id="hero" // Added an ID for potential navigation
-            className="relative bg-cover bg-center h-screen flex items-center justify-center pt-20"
-            style={{
-                backgroundImage:
-                    "url('https://i.ibb.co/vCXGWnx3/herosection.jpg')",
-            }}
-        >
-            {/* Overlay for better text readability */}
-            <div className="absolute inset-0 bg-black bg-opacity-60"></div>
+  return (
+    <section
+      id="hero"
+      className="relative h-screen bg-cover bg-center flex items-center justify-center"
+      style={{
+        backgroundImage: "url('https://i.ibb.co.com/zT89JVH9/heropic.png')",
+      }}
+    >
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black bg-opacity-60"></div>
 
-            {/* Content container */}
-            <div className="relative z-10 text-center text-white px-4">
-                {/* Main headline with updated gradient and font size */}
-                <h1 className="text-[48px] md:text-[64px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 drop-shadow-lg">
-                    Taste the Flavor of Life
-                </h1>
-                {/* Subtitle with updated text color and font size */}
-                <p className="mt-4 text-[16px] md:text-[20px] max-w-2xl text-gray-200">
-                    Discover a world of delicious food, crafted with passion and served
-                    with love. Explore our menu and find your new favorite dish today.
-                </p>
-                {/* Call-to-action button with updated styles */}
-                <a
-                    href="#gallery" // This will scroll to the gallery section
-                    className="mt-8 inline-block px-8 py-4 bg-[#EF451C] text-white text-[16px] font-bold rounded-[10px] shadow-lg hover:bg-opacity-90 transform hover:scale-105 transition-all duration-300"
-                >
-                    View Our Gallery
-                </a>
-            </div>
-        </section>
-    );
+      {/* Content */}
+      <div className="relative z-10 text-center text-white px-4">
+        <h1 className="text-4xl md:text-6xl font-extrabold mb-4">
+          Welcome to <span className="text-[#EF451C]">Yummy Food</span>
+        </h1>
+        <p className="text-lg md:text-Fxl max-w-2xl mx-auto text-gray-200 mb-6">
+          Fresh, Fast & Flavorful — delivering happiness to your doorstep.
+        </p>
+        <a
+          href="#menu"
+          className="inline-block px-8 py-4 bg-[#EF451C] text-white text-lg font-semibold rounded-lg shadow-lg hover:bg-opacity-90 transform hover:scale-105 transition-all duration-300"
+        >
+          Order Now 🍕
+        </a>
+      </div>
+    </section>
+  );
 };
 
 export default HeroSection;
-
