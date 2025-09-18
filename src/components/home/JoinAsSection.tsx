@@ -8,22 +8,22 @@ const JoinAsSection: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between ">
           {/* Restaurant Partner Section */}
           <div className="p-6">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">
+            <h2 className="text-4xl font-bold text-gray-800 mb-6">
               Got a Restaurant? Become a Partner
             </h2>
             
             <ul className="space-y-4 mb-8">
               <li className="flex items-start">
                 <span className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <span className="text-gray-600">Get your food featured</span>
+                <span className="text-gray-600">Showcase your food</span>
               </li>
               <li className="flex items-start">
                 <span className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <span className="text-gray-600">Enjoy an exposure to a huge customer base</span>
+                <span className="text-gray-600">Reach a wide audience of hungry customers</span>
               </li>
               <li className="flex items-start">
                 <span className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <span className="text-gray-600">Increase your sales through collaborative campaigns</span>
+                <span className="text-gray-600">Boost your sales with joint promotional campaigns</span>
               </li>
             </ul>
             
@@ -35,22 +35,22 @@ const JoinAsSection: React.FC = () => {
 
           {/* Delivery Partner Section */}
           <div className="p-6">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">
+            <h2 className="text-4xl font-bold text-gray-800 mb-6">
               Got a Bike or a Cycle? Earn with us
             </h2>
             
             <ul className="space-y-4 mb-8">
               <li className="flex items-start">
                 <span className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <span className="text-gray-600">The freedom to give the service whenever you want</span>
+                <span className="text-gray-600">TWork on your own schedule, with complete flexibility</span>
               </li>
               <li className="flex items-start">
                 <span className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <span className="text-gray-600">Earn extra with daily quests and special offers</span>
+                <span className="text-gray-600">Unlock extra income through daily challenges and exclusive rewards</span>
               </li>
               <li className="flex items-start">
                 <span className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <span className="text-gray-600">Always get your payment right on time!</span>
+                <span className="text-gray-600">Enjoy fast and timely payments, every single time</span>
               </li>
             </ul>
             
