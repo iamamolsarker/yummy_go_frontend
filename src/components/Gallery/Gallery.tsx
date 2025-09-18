@@ -40,8 +40,8 @@ const Gallery: React.FC = () => {
     ];
 
     return (
-        <section className="bg-gray-50 py-20 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto">
+        <section className="bg-gray-50 py-20">
+            <div className="container mx-auto w-[90%]">
                 <div className="text-center">
                     {/* Title with solid dark color */}
                     <h2 className="text-[48px] font-extrabold text-[#363636]">

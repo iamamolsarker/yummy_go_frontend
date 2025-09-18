@@ -5,6 +5,7 @@ import Faq from "../../components/home/Faq";
 import Feature from "../../components/home/Feature";
 import OurCustomersSaying from "../../components/OurCustomersSaying/OurCustomersSaying";
 import HeroSection from "../../components/home/HeroSection";
+import JoinAsSection from "../../components/home/JoinAsSection";
 
 const Home: React.FC = () => {
   return (
@@ -19,9 +20,19 @@ const Home: React.FC = () => {
       <div id="gallery">
         <Gallery />
       </div>
-      <Feature></Feature>
-
-      <Faq></Faq>
+     
+      {/* Feature Section */}
+      <div>
+        <Feature />
+      </div>
+       {/* JoinAsSection */}
+      <div>
+        <JoinAsSection />
+      </div>
+      {/* FAQ Section */}
+      <div>
+        <Faq />
+      </div>
 
       {/* OurCustomersSaying Section */}
       <OurCustomersSaying />
