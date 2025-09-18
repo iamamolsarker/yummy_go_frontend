@@ -1,8 +1,5 @@
-// NOTE: This component is completed by Abrar Shazid. 
-// Reach out to me if any problem occurs. 
-// (For development use only, remove before production)
-
 import React, { useState } from "react";
+import { Plus, Minus } from "lucide-react";
 
 interface FAQItem {
   question: string;
@@ -28,7 +25,10 @@ const Faq: React.FC = () => {
         question: "My foodman's number is unreachable. What should I do?",
         answer: "If you can't reach your delivery person, use the in-app chat function which maintains a record of all communications."
       },
-  
+      {
+        question: "The foodman refused to take my order. What can I do?",
+        answer: "If a delivery person refuses your order, it will be automatically reassigned to another available foodman in your area."
+      },
       {
         question: "The foodman cancelled my order. What should I do?",
         answer: "If your order is cancelled by the delivery person, you'll be automatically notified and given the option to have your order reassigned."
@@ -48,7 +48,6 @@ const Faq: React.FC = () => {
         answer: "Orders will appear in your app dashboard with details about pickup location, delivery destination, and estimated earnings."
       },
       {
-        
         question: "What should I do if I can't deliver on time?",
         answer: "If you encounter delays, update your status in the app and notify the customer through the in-app messaging system."
       },
@@ -74,78 +73,66 @@ const Faq: React.FC = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
+    <div className="container w-[90%] mx-auto py-16 ">
+      <h1 className="text-4xl font-bold text-center mb-12 text-gray-800">
         Frequently Asked Questions
       </h1>
 
       {/* Tab Selection */}
-      <div className="flex justify-center mb-10">
-        <div className="inline-flex rounded-md shadow-sm border border-gray-200 p-1 bg-gray-50">
+      <div className="flex justify-center mb-12">
+        <div className="flex border border-gray-300 rounded-lg overflow-hidden">
           <button
             onClick={() => setActiveTab("customer")}
-            className={`px-6 py-3 rounded-md text-sm font-medium transition-all duration-200 ${
+            className={`px-8 py-3 font-medium transition-all duration-200 ${
               activeTab === "customer" 
-                ? "bg-white text-red-600 shadow-sm" 
-                : "text-gray-600 hover:text-gray-800"
+                ? "bg-red-500 text-white border-red-500" 
+                : "bg-white text-gray-600 hover:bg-gray-50"
             }`}
           >
-            I'm a Customer
+            I'm a customer
           </button>
           <button
             onClick={() => setActiveTab("foodman")}
-            className={`px-6 py-3 rounded-md text-sm font-medium transition-all duration-200 ${
+            className={`px-8 py-3 font-medium transition-all duration-200 ${
               activeTab === "foodman" 
-                ? "bg-white text-red-600 shadow-sm" 
-                : "text-gray-600 hover:text-gray-800"
+                ? "bg-red-500 text-white border-red-500" 
+                : "bg-white text-gray-600 hover:bg-gray-50"
             }`}
           >
-            I'm a Foodman
+            I'm a foodman
           </button>
         </div>
       </div>
 
-      {/* FAQ Accordion */}
+      {/* FAQ List */}
       <div className="space-y-4">
         {activeFaqs.map((item, index) => (
-          <div
-            key={index}
-            className="border border-gray-200 rounded-lg overflow-hidden transition-all duration-200 hover:shadow-sm"
-          >
+          <div key={index} className="border-b border-gray-200 pb-4">
             <button
-              className="flex justify-between items-center w-full p-4 text-left bg-white hover:bg-gray-50 transition-colors duration-150"
+              className="flex items-center justify-between w-full text-left py-4 hover:text-red-500 transition-colors duration-200"
               onClick={() => toggleAccordion(index)}
-              aria-expanded={openIndex === index}
             >
-              <span className="font-medium text-gray-800 pr-2">
-                {item.question}
-              </span>
-              <svg 
-                className={`w-5 h-5 text-red-500 transition-transform duration-300 ${openIndex === index ? 'rotate-180' : ''}`} 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <div className="flex items-center">
+                <div className="mr-4">
+                  {openIndex === index ? (
+                    <Minus className="w-5 h-5 text-red-500" />
+                  ) : (
+                    <Plus className="w-5 h-5 text-red-500" />
+                  )}
+                </div>
+                <span className="text-lg font-medium text-gray-800">
+                  {item.question}
+                </span>
+              </div>
             </button>
             
             {openIndex === index && (
-              <div className="px-4 pb-4 pt-2 bg-white">
-                <p className="text-gray-600">{item.answer}</p>
+              <div className="ml-9 mt-2 pb-4">
+                <p className="text-gray-600 leading-relaxed">{item.answer}</p>
               </div>
             )}
           </div>
         ))}
-      </div>
-
-      {/* Support Contact */}
-      <div className="mt-12 p-6 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-100 text-center">
-        <h3 className="font-semibold text-gray-800 mb-2">Still have questions?</h3>
-        <p className="text-gray-600 text-sm mb-4">Our support team is here to help you</p>
-        <button className="px-5 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors duration-200">
-          Contact Support
-        </button>
       </div>
     </div>
   );
