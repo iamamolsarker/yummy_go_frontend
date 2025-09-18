@@ -1,11 +1,9 @@
 import React from 'react';
 
-const demo1 = () => {
-    return (
-        <div>
-            
-        </div>
-    );
-};
+const Demo1: React.FC = () => {
+  return (
+    <div>demo1</div>
+  )
+}
 
-export default demo1;
+export default Demo1;

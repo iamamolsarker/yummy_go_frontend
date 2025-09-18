@@ -6,7 +6,7 @@ import Feature from "../../components/home/Feature";
 import OurCustomersSaying from "../../components/OurCustomersSaying/OurCustomersSaying";
 import HeroSection from "../../components/home/HeroSection";
 
-const Home = () => {
+const Home: React.FC = () => {
   return (
     <main>
        

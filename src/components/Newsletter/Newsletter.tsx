@@ -1,4 +1,6 @@
-import React, { FormEvent, useState } from "react";
+import React, {useState } from "react";
+import type { FormEvent } from 'react';
+
 import axios from "axios";
 
 const Newsletter: React.FC = () => {
