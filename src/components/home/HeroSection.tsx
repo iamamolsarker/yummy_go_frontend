@@ -51,7 +51,7 @@ import bannerImg from "../../assets/home/hero-2.webp"
 
 const Banner: React.FC = () => {
   return (
-    <section className="bg-[#ffe5df]/10 py-12">
+    <section className="bg-[#ffe5df]/40 py-12">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-8 px-4">
         {/* Left Side */}
         <div className="text-center md:text-left space-y-4">
