@@ -85,7 +85,7 @@ const Faq: React.FC = () => {
             onClick={() => setActiveTab("customer")}
             className={`px-8 py-3 font-medium transition-all duration-200 ${
               activeTab === "customer" 
-                ? "bg-red-500 text-white border-red-500" 
+                ? "bg-[#ef451c] text-white border-[#ef451c]" 
                 : "bg-white text-gray-600 hover:bg-gray-50"
             }`}
           >
@@ -109,15 +109,15 @@ const Faq: React.FC = () => {
         {activeFaqs.map((item, index) => (
           <div key={index} className="border-b border-gray-200 pb-4">
             <button
-              className="flex items-center justify-between w-full text-left py-4 hover:text-red-500 transition-colors duration-200"
+              className="flex items-center justify-between w-full text-left py-4 hover:text-[#ef451c] transition-colors duration-200"
               onClick={() => toggleAccordion(index)}
             >
               <div className="flex items-center">
                 <div className="mr-4">
                   {openIndex === index ? (
-                    <Minus className="w-5 h-5 text-red-500" />
+                    <Minus className="w-5 h-5 text-[#ef451c]" />
                   ) : (
-                    <Plus className="w-5 h-5 text-red-500" />
+                    <Plus className="w-5 h-5 text-[#ef451c]" />
                   )}
                 </div>
                 <span className="text-lg font-medium text-gray-800">
