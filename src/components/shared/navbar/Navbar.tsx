@@ -1,6 +1,7 @@
 import React from "react";
 import { FiShoppingCart } from "react-icons/fi";
 import logo from "/yummy-go-logo.png";
+import { Link } from "react-router";
 
 const Navbar: React.FC = () => {
   return (
@@ -9,7 +10,10 @@ const Navbar: React.FC = () => {
         {/* Logo + Brand Name */}
         <div className="flex items-center gap-2">
           <div>
-            <img src={logo} alt="" className="h-14 " />
+            <Link to={'/'}>
+                <img src={logo} alt="" className="h-14 " />
+            </Link>
+        
           </div>
           <div className="hidden md:block">
             <h1 className="text-2xl font-bold text-[#EF451C]">Yummy  Go</h1>
