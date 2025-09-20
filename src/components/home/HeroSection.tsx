@@ -23,16 +23,16 @@ const HeroSection: React.FC = () => {
             {/* Search Bar */}
             <div className="bg-white p-2 rounded-2xl shadow-lg border border-gray-100 max-w-lg mx-auto lg:mx-0">
               <div className="flex items-center">
-                <div className="flex items-center flex-1 px-4 py-3">
-                  <MapPin className="w-5 h-5 text-gray-400 mr-3" />
+                <div className="flex items-center flex-1 px-2 py-1.5 md:px-4 md:py-3">
+                  <MapPin className="w-4 h-4 md:w-5 md:h-5 text-gray-400 mr-1.5  md:mr-3" />
                   <input
                     type="text"
                     placeholder="Enter your delivery address..."
                     className="flex-1 outline-none text-gray-700 placeholder-gray-400"
                   />
                 </div>
-                <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-colors duration-300">
-                  <Search className="w-5 h-5" />
+                <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white px-3 md:px-8 py-3 rounded-xl font-semibold flex items-center gap-1 md:gap-2 transition-colors duration-300">
+                  <Search className="w-4 h-4 md:w-5 md:h-5" />
                   Find Food
                 </button>
               </div>
