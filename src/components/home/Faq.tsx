@@ -95,7 +95,7 @@ const Faq: React.FC = () => {
             onClick={() => setActiveTab("foodman")}
             className={`px-8 py-3 font-medium transition-all duration-200 ${
               activeTab === "foodman" 
-                ? "bg-red-500 text-white border-red-500" 
+                ? "bg-[#ef451c] text-white border-[#ef451c]" 
                 : "bg-white text-gray-600 hover:bg-gray-50"
             }`}
           >
