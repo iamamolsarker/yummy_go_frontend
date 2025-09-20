@@ -1,4 +1,3 @@
-import React from 'react';
 import Newsletter from "../../components/Newsletter/Newsletter";
 import Gallery from '../../components/Gallery/Gallery';
 
