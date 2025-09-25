@@ -32,7 +32,7 @@ const PartnerForm: React.FC = () => {
             <input
               type="text"
               placeholder="Enter company name"
-              defaultValue="Yousuf Ali Ltd"
+              defaultValue="Code Warriors Ltd"
               className="w-full px-4 py-3 border border-[#3636361a] rounded-[10px] text-[16px] focus:outline-none focus:ring-2 focus:ring-[#EF451C]"
               required
             />
@@ -46,7 +46,7 @@ const PartnerForm: React.FC = () => {
             <input
               type="text"
               placeholder="Enter owner name"
-              defaultValue="Yousuf Ali"
+              defaultValue="Code Warriors"
               className="w-full px-4 py-3 border border-[#3636361a] rounded-[10px] text-[16px] focus:outline-none focus:ring-2 focus:ring-[#EF451C]"
               required
             />
@@ -60,7 +60,7 @@ const PartnerForm: React.FC = () => {
             <input
               type="tel"
               placeholder="Enter mobile number"
-              defaultValue="01754954385"
+              defaultValue="01712345678"
               className="w-full px-4 py-3 border border-[#3636361a] rounded-[10px] text-[16px] focus:outline-none focus:ring-2 focus:ring-[#EF451C]"
               required
             />
@@ -74,7 +74,7 @@ const PartnerForm: React.FC = () => {
             <input
               type="text"
               placeholder="Enter trade license no."
-              defaultValue="58456684585"
+              defaultValue="99999999999999"
               className="w-full px-4 py-3 border border-[#3636361a] rounded-[10px] text-[16px] focus:outline-none focus:ring-2 focus:ring-[#EF451C]"
               required
             />
@@ -88,7 +88,7 @@ const PartnerForm: React.FC = () => {
             <input
               type="email"
               placeholder="Enter your email"
-              defaultValue="demo@email.com"
+              defaultValue="CodeWarriors@email.com"
               className="w-full px-4 py-3 border border-[#3636361a] rounded-[10px] text-[16px] focus:outline-none focus:ring-2 focus:ring-[#EF451C]"
               required
             />
