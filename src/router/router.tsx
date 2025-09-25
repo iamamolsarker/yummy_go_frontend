@@ -3,10 +3,10 @@ import RootLayOut from "../layouts/RootLayOut";
 import About from "../pages/aboutPage/About";
 import Home from "../pages/homePage/Home";
 import Error from "../pages/error page/Error";
-import FoodManForm from "../components/RegisterForm/FoodManForm";
-import PartnerForm from "../components/RegisterForm/PartnerForm";
-import PartnerLoginForm from "../LoginForm/PartnerLoginForm";
-import FoodManLoginForm from "../LoginForm/FoodManLoginForm";
+import FoodManForm from "../pages/joinAsRider/FoodManForm";
+import PartnerForm from "../pages/joinAsPartner/PartnerForm";
+
+
 
 export const router = createBrowserRouter([
   {
@@ -28,14 +28,6 @@ export const router = createBrowserRouter([
       {
         path: "/partner-form",
         element: <PartnerForm />
-      },
-      {
-        path: "/foodman-login",
-        element: <FoodManLoginForm />
-      },
-      {
-        path: "/partner-login",
-        element: <PartnerLoginForm />
       },
 
     ]

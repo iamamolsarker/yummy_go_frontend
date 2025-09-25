@@ -1,6 +1,7 @@
 import React from "react";
 import { Search, MapPin } from "lucide-react";
 import bannerImg from "../../assets/home/Delivery-man-removebg.png";
+import { Link } from "react-router";
 
 const HeroSection: React.FC = () => {
   return (
@@ -31,16 +32,18 @@ const HeroSection: React.FC = () => {
                     className="flex-1 outline-none text-gray-700 placeholder-gray-400"
                   />
                 </div>
-                <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white px-3 md:px-8 py-3 rounded-xl font-semibold flex items-center gap-1 md:gap-2 transition-colors duration-300">
+                <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white px-2 md:px-8 py-3 rounded-xl font-semibold flex items-center gap-1 md:gap-2 transition-colors duration-300">
                   <Search className="w-4 h-4 md:w-5 md:h-5" />
-                  Find Food
+                  <p> Find Food</p>
+                 
                 </button>
               </div>
             </div>
             <div className="pt-5">
               <p className="text-gray-600 text-xl">
                 Are you a Restaurant Owner?{" "}
-                <span className="text-[#ef451c] cursor-pointer font-medium underline">Join as a Partner</span>
+                <Link to="/partner-form">   <span className="text-[#ef451c] cursor-pointer font-medium underline">Join as a Partner</span></Link>
+             
               </p>
             </div>
           </div>
