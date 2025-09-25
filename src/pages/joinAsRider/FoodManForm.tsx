@@ -64,13 +64,13 @@ const FoodManForm: React.FC = () => {
                                 <input
                                     type="text"
                                     placeholder="First Name"
-                                    defaultValue="Yousuf"
+                                    defaultValue="Code"
                                     className="px-4 py-3 border border-[#3636361a] rounded-[10px] focus:ring-2 focus:ring-[#EF451C]"
                                 />
                                 <input
                                     type="text"
                                     placeholder="Last Name"
-                                    defaultValue="Ali"
+                                    defaultValue="Warriors"
                                     className="px-4 py-3 border border-[#3636361a] rounded-[10px] focus:ring-2 focus:ring-[#EF451C]"
                                 />
                             </div>
@@ -79,7 +79,7 @@ const FoodManForm: React.FC = () => {
                             <input
                                 type="tel"
                                 placeholder="01XXXXXXXXX"
-                                defaultValue="01754954385"
+                                defaultValue="01712345678"
                                 className="w-full px-4 py-3 border border-[#3636361a] rounded-[10px] focus:ring-2 focus:ring-[#EF451C]"
                             />
 
@@ -87,9 +87,13 @@ const FoodManForm: React.FC = () => {
                             <select className="w-full px-4 py-3 border border-[#3636361a] rounded-[10px] focus:ring-2 focus:ring-[#EF451C]">
                                 <option>Select City</option>
                                 <option>Dhaka</option>
-                                <option>Chittagong</option>
-                                <option>Khulna</option>
+                                <option>Chattogram</option>
                                 <option>Rajshahi</option>
+                                <option>Khulna</option>
+                                <option>Barishal</option>
+                                <option>Sylhet</option>
+                                <option>Rangpur</option>
+                                <option>Mymensingh</option>
                             </select>
 
                             {/* Next Button */}
@@ -126,13 +130,13 @@ const FoodManForm: React.FC = () => {
                                 <input
                                     type="text"
                                     placeholder="First Name"
-                                    defaultValue="Yousuf"
+                                    defaultValue="code"
                                     className="px-4 py-3 border border-[#3636361a] rounded-[10px]"
                                 />
                                 <input
                                     type="text"
                                     placeholder="Last Name"
-                                    defaultValue="Ali"
+                                    defaultValue="Warriors"
                                     className="px-4 py-3 border border-[#3636361a] rounded-[10px]"
                                 />
                             </div>
@@ -140,7 +144,7 @@ const FoodManForm: React.FC = () => {
                             <input
                                 type="tel"
                                 placeholder="Mobile Number"
-                                defaultValue="01754954385"
+                                defaultValue="01712345678"
                                 className="w-full px-4 py-3 border border-[#3636361a] rounded-[10px]"
                             />
 
@@ -150,9 +154,15 @@ const FoodManForm: React.FC = () => {
                             />
 
                             <select className="w-full px-4 py-3 border border-[#3636361a] rounded-[10px]">
-                                <option>Select City</option>
+                                <option>Select Division</option>
                                 <option>Dhaka</option>
-                                <option>Chittagong</option>
+                                <option>Chattogram</option>
+                                <option>Rajshahi</option>
+                                <option>Khulna</option>
+                                <option>Barishal</option>
+                                <option>Sylhet</option>
+                                <option>Rangpur</option>
+                                <option>Mymensingh</option>
                             </select>
 
                             {/* Services */}
@@ -212,7 +222,7 @@ const FoodManForm: React.FC = () => {
                             <input
                                 type="text"
                                 placeholder="Registration Number"
-                                defaultValue="58456684585"
+                                defaultValue="999999999999"
                                 className="w-full px-4 py-3 border border-[#3636361a] rounded-[10px]"
                             />
 
