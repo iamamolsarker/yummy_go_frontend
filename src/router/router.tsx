@@ -5,8 +5,6 @@ import Home from "../pages/homePage/Home";
 import Error from "../pages/error page/Error";
 import FoodManForm from "../pages/joinAsRider/FoodManForm";
 import PartnerForm from "../pages/joinAsPartner/PartnerForm";
-import Login from "../pages/login/Login";
-import UserReg from "../pages/userReg/UserReg";
 
 
 
@@ -17,32 +15,25 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Home />,
+        element: <Home />
       },
       {
         path: "about",
-        element: <About />,
-      },
-      {
-        path: "/log-in",
-        element:<Login/>
-      },
-      {
-        path: "/user-reg",
-        element: <UserReg/>
+        element: <About />
       },
       {
         path: "/foodman-form",
-        element: <FoodManForm />,
+        element: <FoodManForm />
       },
       {
         path: "/partner-form",
-        element: <PartnerForm />,
+        element: <PartnerForm />
       },
-    ],
+
+    ]
   },
   {
     path: "*",
-    element: <Error></Error>,
-  },
+    element: <Error></Error>
+  }
 ]);
