@@ -29,12 +29,15 @@ const Navbar: React.FC = () => {
 
           {/* Sign in button */}
           <button className="px-4 py-1 border border-[#ef451c] rounded-md text-[#ef451c] hover:bg-[#ffe5df] transition">
-            Sign in
+            <Link to={'log-in'}> Sign in</Link>
+           
           </button>
+
 
           {/* Sign up button */}
           <button className="px-4 py-1 bg-[#ef451c] text-white rounded-md hover:bg-[#c23312] transition">
-            Sign up
+             <Link to={'user-reg'}> Sign up</Link>
+            
           </button>
         </div>
       </div>
