@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router';
 
 const JoinAsSection: React.FC = () => {
   return (
@@ -11,7 +12,7 @@ const JoinAsSection: React.FC = () => {
             <h2 className="text-4xl font-bold text-gray-800 mb-6">
               Got a Restaurant? Become a Partner
             </h2>
-            
+
             <ul className="space-y-4 mb-8">
               <li className="flex items-start">
                 <span className="w-2 h-2 bg-[#ef451c] rounded-full mt-2 mr-3 flex-shrink-0"></span>
@@ -27,10 +28,19 @@ const JoinAsSection: React.FC = () => {
               </li>
             </ul>
 
-            <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition-colors duration-300">
+            {/* <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition-colors duration-300">
               Join as a Partner
               <ArrowRight size={20} />
-            </button>
+            </button> */}
+
+
+            <Link to="/partner-form">
+              <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition-colors duration-300">
+                Join as a Partner
+                <ArrowRight size={20} />
+              </button>
+            </Link>
+
           </div>
 
           {/* Delivery Partner Section */}
@@ -38,7 +48,7 @@ const JoinAsSection: React.FC = () => {
             <h2 className="text-4xl font-bold text-gray-800 mb-6">
               Got a Bike or a Cycle? Earn with us
             </h2>
-            
+
             <ul className="space-y-4 mb-8">
               <li className="flex items-start">
                 <span className="w-2 h-2 bg-[#ef451c] rounded-full mt-2 mr-3 flex-shrink-0"></span>
@@ -54,10 +64,17 @@ const JoinAsSection: React.FC = () => {
               </li>
             </ul>
 
-            <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition-colors duration-300">
+            {/* <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition-colors duration-300">
               Become a Foodman
               <ArrowRight size={20} />
-            </button>
+            </button> */}
+
+            <Link to="/foodman-form">
+              <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition-colors duration-300">
+                Become a Foodman
+                <ArrowRight size={20} />
+              </button>
+            </Link>
           </div>
         </div>
         <div className='border-t-1 border-gray-200 mt-10'></div>

@@ -4,8 +4,9 @@ import logo from "/yummy-go-logo.png";
 import { Link } from "react-router";
 
 const Navbar: React.FC = () => {
+
   return (
-    <nav className="shadow-md sticky top-0 z-99 bg-[#ffe5df] backdrop-blur-3xl">
+    <nav className="shadow-md sticky top-0 z-[1000] bg-[#ffe5df] backdrop-blur-3xl">
       <div className="container mx-auto flex items-center justify-between py-1.5  px-3 ">
         {/* Logo + Brand Name */}
         <div className="flex items-center gap-2">
@@ -29,12 +30,15 @@ const Navbar: React.FC = () => {
 
           {/* Sign in button */}
           <button className="px-4 py-1 border border-[#ef451c] rounded-md text-[#ef451c] hover:bg-[#ffe5df] transition">
-            Sign in
+            <Link to={'log-in'}> Sign in</Link>
+           
           </button>
+
 
           {/* Sign up button */}
           <button className="px-4 py-1 bg-[#ef451c] text-white rounded-md hover:bg-[#c23312] transition">
-            Sign up
+             <Link to={'user-reg'}> Sign up</Link>
+            
           </button>
         </div>
       </div>
