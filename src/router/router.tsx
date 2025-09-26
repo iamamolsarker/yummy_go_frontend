@@ -7,6 +7,7 @@ import FoodManForm from "../pages/joinAsRider/FoodManForm";
 import PartnerForm from "../pages/joinAsPartner/PartnerForm";
 import Login from "../pages/login/Login";
 import UserReg from "../pages/userReg/UserReg";
+import AuthLayout from "../layouts/AuthLayout";
 
 
 
@@ -35,12 +36,18 @@ export const router = createBrowserRouter([
     ]
   },
   {
-    path: "/log-in",
-    element: <Login />
-  },
-  {
-    path: "/user-reg",
-    element: <UserReg />
+    path: "/auth",
+    element: <AuthLayout></AuthLayout>,
+    children: [
+      {
+        path: "log-in",
+        element: <Login />
+      },
+      {
+        path: "user-reg",
+        element: <UserReg />
+      },
+    ]
   },
   {
     path: "*",
