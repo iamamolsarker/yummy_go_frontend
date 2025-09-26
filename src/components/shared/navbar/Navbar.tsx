@@ -4,6 +4,7 @@ import logo from "/yummy-go-logo.png";
 import { Link } from "react-router";
 
 const Navbar: React.FC = () => {
+
   return (
     <nav className="shadow-md sticky top-0 z-99 bg-[#ffe5df] backdrop-blur-3xl">
       <div className="container mx-auto flex items-center justify-between py-1.5  px-3 ">
