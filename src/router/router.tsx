@@ -23,14 +23,6 @@ export const router = createBrowserRouter([
         path: "about",
         element: <About />
       },
-       {
-        path: "/log-in",
-        element:<Login/>
-      },
-      {
-        path: "/user-reg",
-        element: <UserReg/>
-      },
       {
         path: "/foodman-form",
         element: <FoodManForm />
@@ -43,18 +35,15 @@ export const router = createBrowserRouter([
     ]
   },
   {
-<<<<<<< HEAD
-    path: '/login',
-    element: <LoginPage></LoginPage>
+    path: "/log-in",
+    element: <Login />
   },
   {
-    path:"*",
-    element:<Error></Error>
-  }
-]);
-=======
+    path: "/user-reg",
+    element: <UserReg />
+  },
+  {
     path: "*",
     element: <Error></Error>
   }
 ]);
->>>>>>> 8cf9b49baff498bc6c4be75d5425a6d74fb16cb0
