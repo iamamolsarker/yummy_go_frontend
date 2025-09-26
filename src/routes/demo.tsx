@@ -2,7 +2,7 @@ import React from 'react';
 
 const Demo: React.FC = () => {
   return (
-    <div>demo test</div>
+    <div>demo</div>
   )
 }
 

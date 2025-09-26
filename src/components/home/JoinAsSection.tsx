@@ -14,20 +14,20 @@ const JoinAsSection: React.FC = () => {
             
             <ul className="space-y-4 mb-8">
               <li className="flex items-start">
-                <span className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-[#ef451c] rounded-full mt-2 mr-3 flex-shrink-0"></span>
                 <span className="text-gray-600">Showcase your food</span>
               </li>
               <li className="flex items-start">
-                <span className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-[#ef451c] rounded-full mt-2 mr-3 flex-shrink-0"></span>
                 <span className="text-gray-600">Reach a wide audience of hungry customers</span>
               </li>
               <li className="flex items-start">
-                <span className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-[#ef451c] rounded-full mt-2 mr-3 flex-shrink-0"></span>
                 <span className="text-gray-600">Boost your sales with joint promotional campaigns</span>
               </li>
             </ul>
-            
-            <button className="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition-colors duration-300">
+
+            <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition-colors duration-300">
               Join as a Partner
               <ArrowRight size={20} />
             </button>
@@ -41,20 +41,20 @@ const JoinAsSection: React.FC = () => {
             
             <ul className="space-y-4 mb-8">
               <li className="flex items-start">
-                <span className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                <span className="text-gray-600">TWork on your own schedule, with complete flexibility</span>
+                <span className="w-2 h-2 bg-[#ef451c] rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span className="text-gray-600">Work on your own schedule, with complete flexibility</span>
               </li>
               <li className="flex items-start">
-                <span className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-[#ef451c] rounded-full mt-2 mr-3 flex-shrink-0"></span>
                 <span className="text-gray-600">Unlock extra income through daily challenges and exclusive rewards</span>
               </li>
               <li className="flex items-start">
-                <span className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-[#ef451c] rounded-full mt-2 mr-3 flex-shrink-0"></span>
                 <span className="text-gray-600">Enjoy fast and timely payments, every single time</span>
               </li>
             </ul>
-            
-            <button className="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition-colors duration-300">
+
+            <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition-colors duration-300">
               Become a Foodman
               <ArrowRight size={20} />
             </button>
