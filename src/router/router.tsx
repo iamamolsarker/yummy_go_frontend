@@ -17,13 +17,13 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Home />,
+        element: <Home />
       },
       {
         path: "about",
-        element: <About />,
+        element: <About />
       },
-      {
+       {
         path: "/log-in",
         element:<Login/>
       },
@@ -33,13 +33,14 @@ export const router = createBrowserRouter([
       },
       {
         path: "/foodman-form",
-        element: <FoodManForm />,
+        element: <FoodManForm />
       },
       {
         path: "/partner-form",
-        element: <PartnerForm />,
+        element: <PartnerForm />
       },
-    ],
+
+    ]
   },
   {
 <<<<<<< HEAD
@@ -53,7 +54,7 @@ export const router = createBrowserRouter([
 ]);
 =======
     path: "*",
-    element: <Error></Error>,
-  },
+    element: <Error></Error>
+  }
 ]);
 >>>>>>> 8cf9b49baff498bc6c4be75d5425a6d74fb16cb0
