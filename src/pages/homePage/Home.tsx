@@ -6,8 +6,8 @@ import Feature from "../../components/home/Feature";
 import OurCustomersSaying from "../../components/OurCustomersSaying/OurCustomersSaying";
 import HeroSection from "../../components/home/HeroSection";
 import JoinAsSection from "../../components/home/JoinAsSection";
-import FeaturesSection from "../../components/Features/Features";
 import PartnersSection from "../../components/partners/Partners";
+import EarnCarBike from "../../components/home/EarnCarBike";
 
 const Home: React.FC = () => {
   return (
@@ -26,6 +26,11 @@ const Home: React.FC = () => {
       {/* Gallery Section */}
       <div id="gallery">
         <Gallery />
+      </div>
+      
+      {/* Earn Section */}
+      <div>
+        <EarnCarBike />
       </div>
      
       {/* Feature Section */}

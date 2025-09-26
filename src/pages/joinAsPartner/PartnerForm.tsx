@@ -16,7 +16,7 @@ const PartnerForm: React.FC = () => {
       style={{ backgroundImage: "url('/joinaspartner.png')" }}
     >
       {/* Transparent Form Card */}
-      <div className="relative w-full max-w-md backdrop-blur-md shadow-lg rounded-[10px] p-8 border border-[#3636361a]">
+      <div className="relative w-full max-w-md bg-white/40 backdrop-blur-lg shadow-xl rounded-[12px] p-8 border border-[#36363633] hover:shadow-2xl transition-all duration-300">
         {/* Title */}
         <h2 className="text-[32px] font-bold text-[#363636] mb-6 text-center">
           Join as a Partner
