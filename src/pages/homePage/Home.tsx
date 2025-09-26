@@ -6,9 +6,9 @@ import Feature from "../../components/home/Feature";
 import OurCustomersSaying from "../../components/OurCustomersSaying/OurCustomersSaying";
 import HeroSection from "../../components/home/HeroSection";
 import JoinAsSection from "../../components/home/JoinAsSection";
-import PartnersSection from "../../components/partners/Partners";
+import PartnersSection from "../../components/home/Partners";
 import EarnCarBike from "../../components/home/EarnCarBike";
-import DeliveryMapSection from "../../components/DeliveryRange/DeliveredTo";
+import DeliveryMapSection from "../../components/home/DeliveredTo";
 
 const Home: React.FC = () => {
   return (

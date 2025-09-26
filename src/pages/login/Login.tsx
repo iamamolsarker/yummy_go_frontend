@@ -1,33 +1,50 @@
 "use client";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { 
-  FaEnvelope, 
-  FaLock, 
-  FaUtensils, 
-  FaEye, 
-  FaEyeSlash 
+import { toast } from "react-toastify";
+import {
+  FaEnvelope,
+  FaLock,
+  FaUtensils,
+  FaEye,
+  FaEyeSlash
 } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc"; 
-import { Link } from "react-router";
+import { FcGoogle } from "react-icons/fc";
+import { Link, useNavigate } from "react-router";
+import useAuth from "../../hooks/useAuth";
 
 type LoginForm = {
   email: string;
   password: string;
 };
 
+
+
 const Login: React.FC = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>();
+  const { register, reset, handleSubmit, formState: { errors } } = useForm<LoginForm>();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  
+  const { logIn, loading, setLoading } = useAuth();
 
   const onSubmit = async (data: LoginForm) => {
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("✅ Login Data:", data);
-    setIsLoading(false);
-    alert("🍕 Welcome back to Yummy Go!");
-    // to do: use react hot toast 
+    try {
+      const userCredential = await logIn(data.email, data.password);
+
+      // success toast
+      toast.success(`Welcome back, ${userCredential.user.displayName || "User"} 🎉`);
+      // Swal.fire("Success!", "You are logged in!", "success");
+
+      reset();
+      navigate("/"); // go home
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Login failed");
+      // Swal.fire("Error!", err.message || "Login failed", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,7 +61,7 @@ const Login: React.FC = () => {
             Welcome back 👋
           </h1>
           <p className="text-gray-600 mt-1">
-            Sign in to <span className="font-semibold text-orange-600">Yummy Go</span>  
+            Sign in to <span className="font-semibold text-orange-600">Yummy Go</span>
             & get your food delivered fast 🚀
           </p>
         </div>
@@ -61,7 +78,7 @@ const Login: React.FC = () => {
                 <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="email"
-                  {...register("email", { 
+                  {...register("email", {
                     required: "Email is required",
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -88,7 +105,7 @@ const Login: React.FC = () => {
                 <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type={showPassword ? "text" : "password"}
-                  {...register("password", { 
+                  {...register("password", {
                     required: "Password is required",
                     minLength: {
                       value: 6,
@@ -116,13 +133,13 @@ const Login: React.FC = () => {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loading}
               className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white 
                 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl 
                 transform hover:-translate-y-0.5 transition-all duration-200 
                 disabled:opacity-50 disabled:transform-none"
             >
-              {isLoading ? (
+              {loading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-t-2 border-white border-solid rounded-full animate-spin mr-2"></div>
                   Signing in...
@@ -144,15 +161,15 @@ const Login: React.FC = () => {
           <button className="w-full flex items-center justify-center py-3 px-4 
             border border-[#dadce0] rounded-xl bg-white text-[#3c4043] font-medium 
             hover:bg-[#f7f9fa] transition-all shadow-sm">
-            <FcGoogle className="w-5 h-5 mr-3" /> 
+            <FcGoogle className="w-5 h-5 mr-3" />
             Continue with Google
           </button>
 
           {/* Sign Up */}
           <p className="text-center text-gray-600 mt-6">
             New to <span className="font-semibold text-orange-600">Yummy Go</span>?{" "}
-            <Link 
-              to="/user-reg" 
+            <Link
+              to="/user-reg"
               className="text-orange-500 font-semibold hover:text-orange-600 underline"
             >
               Create an account

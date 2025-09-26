@@ -1,15 +1,17 @@
 "use client";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { 
-  FaEnvelope, 
-  FaLock, 
-  FaUser, 
-  FaEye, 
-  FaEyeSlash 
+import {
+  FaEnvelope,
+  FaLock,
+  FaUser,
+  FaEye,
+  FaEyeSlash
 } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc"; 
-import { Link } from "react-router";
+import { FcGoogle } from "react-icons/fc";
+import { Link, useNavigate } from "react-router";
+import useAuth from "../../hooks/useAuth";
+import { toast } from "react-toastify";
 
 type RegisterForm = {
   name: string;
@@ -19,18 +21,37 @@ type RegisterForm = {
 };
 
 const UserReg: React.FC = () => {
+  const { createUser, updateUser, loading, setLoading } = useAuth();
+  const navigate = useNavigate();
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterForm>();
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] =useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const onSubmit = async (data: RegisterForm) => {
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("✅ Register Data:", data);
-    setIsLoading(false);
-    alert("🎉 Account created successfully! Welcome to Yummy Go 🍔");
-    // to do:use react toast 
+    setLoading(true);
+    try {
+      // 1️⃣ Create the user
+      await createUser(data.email, data.password);
+
+      // 2️⃣ Update user profile with name
+      if (data.name) {
+        await updateUser({ displayName: data.name });
+      }
+
+      // 3️⃣ Success toast
+      toast.success(`🎉 Welcome to Yummy Go, ${data.name}!`);
+
+      // 4️⃣ Reset + Navigate
+      navigate("/");
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Something went wrong during registration");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -77,7 +98,7 @@ const UserReg: React.FC = () => {
                 <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="email"
-                  {...register("email", { 
+                  {...register("email", {
                     required: "Email is required",
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -102,7 +123,7 @@ const UserReg: React.FC = () => {
                 <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type={showPassword ? "text" : "password"}
-                  {...register("password", { 
+                  {...register("password", {
                     required: "Password is required",
                     minLength: { value: 6, message: "Password must be at least 6 characters" }
                   })}
@@ -131,7 +152,7 @@ const UserReg: React.FC = () => {
                 <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type={showConfirmPassword ? "text" : "password"}
-                  {...register("confirmPassword", { 
+                  {...register("confirmPassword", {
                     required: "Please confirm your password",
                     validate: value => value === watch("password") || "Passwords do not match"
                   })}
@@ -154,13 +175,13 @@ const UserReg: React.FC = () => {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loading}
               className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white 
                 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl 
                 transform hover:-translate-y-0.5 transition-all duration-200 
                 disabled:opacity-50 disabled:transform-none"
             >
-              {isLoading ? (
+              {loading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-t-2 border-white border-solid rounded-full animate-spin mr-2"></div>
                   Creating account...
@@ -189,8 +210,8 @@ const UserReg: React.FC = () => {
           {/* Redirect to Login */}
           <p className="text-center text-gray-600 mt-6">
             Already have an account?{" "}
-            <Link 
-              to="/log-in" 
+            <Link
+              to="/log-in"
               className="text-orange-500 font-semibold hover:text-orange-600 underline"
             >
               Sign in
