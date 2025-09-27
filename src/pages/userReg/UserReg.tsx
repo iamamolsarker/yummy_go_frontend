@@ -21,7 +21,7 @@ type RegisterForm = {
 };
 
 const UserReg: React.FC = () => {
-  const { createUser, updateUser, loading, setLoading } = useAuth();
+  const { createUser, updateUser, loading, setLoading, logInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterForm>();
   const [showPassword, setShowPassword] = useState(false);
@@ -53,6 +53,22 @@ const UserReg: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await logInWithGoogle();
+      toast.success(`Welcome, ${result.user.displayName || "User"} to yummy go 🎉`);
+      navigate('/');
+    }
+    catch (err) {
+      console.error(err);
+      toast.error("Google Sign-In failed. Please try again.");
+    }
+    finally {
+      
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#f7f9fa] flex items-center justify-center p-6 mb-8">
@@ -200,7 +216,9 @@ const UserReg: React.FC = () => {
           </div>
 
 
-          <button className="w-full flex items-center justify-center py-3 px-4 
+          <button
+            onClick={handleGoogleSignIn}
+            className="w-full flex items-center justify-center py-3 px-4 
             border border-[#dadce0] rounded-xl bg-white text-[#3c4043] font-medium 
             hover:bg-[#f7f9fa] transition-all shadow-sm">
             <FcGoogle className="w-5 h-5 mr-3" />

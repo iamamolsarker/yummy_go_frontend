@@ -1,8 +1,6 @@
 import { Outlet } from 'react-router';
 import Navbar from '../components/shared/navbar/Navbar';
 import Footer from '../components/shared/footer/Footer';
-import { ToastContainer } from "react-toastify";
-
 
 const RootLayOut: React.FC = () => {
     return (
@@ -10,16 +8,6 @@ const RootLayOut: React.FC = () => {
             <Navbar />
             <Outlet />
             <Footer />
-            <ToastContainer
-                position="top-right"
-                autoClose={2000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                pauseOnHover
-                draggable
-                theme="colored"
-            />
         </div>
     );
 };

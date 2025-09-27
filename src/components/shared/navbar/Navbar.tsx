@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { FiShoppingCart } from "react-icons/fi";
 import { FaUserCircle, FaCog, FaSignOutAlt, FaUser } from "react-icons/fa";
@@ -9,6 +10,7 @@ import { toast } from "react-toastify";
 const Navbar: React.FC = () => {
   // Replace with your AuthContext or props
   const { user, logOut } = useAuth();
+  console.log(user)
 
 
   const [open, setOpen] = useState(false);
@@ -71,7 +73,7 @@ const Navbar: React.FC = () => {
                 className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full border border-[#ef451c] hover:bg-[#c23312] transition"
               >
                 <img
-                  src={user.photoURL || "https://via.placeholder.com/150"}
+                  src={user.photoURL ?? "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                   alt="User Avatar"
                   className="h-9 w-9 rounded-full object-cover border border-white"
                 />
