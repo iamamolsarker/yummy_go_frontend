@@ -22,7 +22,7 @@ const Navbar: React.FC = () => {
       logOut();
 
       // success toast
-      toast.success("Logged Out Successfully 🎉");
+      toast.success("Logged Out Successfully ");
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -49,13 +49,14 @@ const Navbar: React.FC = () => {
     <nav className="shadow-md sticky top-0 z-[1000] bg-[#ffe5df] backdrop-blur-3xl">
       <div className="container mx-auto flex items-center justify-between py-1.5 px-3">
         {/* Logo + Brand */}
-        <div className="flex items-center gap-2">
-          <Link to={"/"}>
+        <div >
+          <Link to={"/"} className="flex items-center gap-2">
             <img src={logo} alt="Yummy Go" className="h-14" />
-          </Link>
-          <div className="hidden md:block">
+             <div className="hidden md:block">
             <h1 className="text-2xl font-bold text-[#EF451C]">Yummy Go</h1>
           </div>
+          </Link>
+         
         </div>
 
         {/* Right Side */}

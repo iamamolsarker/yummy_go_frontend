@@ -25,7 +25,7 @@ const Error: React.FC = () => {
           </div>
 
           {/* Title */}
-          <h3 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent mb-4">
+          <h3 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent py-4">
             Oops! Something Went Wrong
           </h3>
 

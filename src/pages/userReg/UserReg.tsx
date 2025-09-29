@@ -39,7 +39,7 @@ const UserReg: React.FC = () => {
       }
 
       // 3️⃣ Success toast
-      toast.success(`🎉 Welcome to Yummy Go, ${data.name}!`);
+      toast.success(` Welcome to Yummy Go, ${data.name}!`);
 
       // 4️⃣ Reset + Navigate
       navigate("/");
@@ -57,7 +57,7 @@ const UserReg: React.FC = () => {
   const handleGoogleSignIn = async () => {
     try {
       const result = await logInWithGoogle();
-      toast.success(`Welcome, ${result.user.displayName || "User"} to yummy go 🎉`);
+      toast.success(`Welcome, ${result.user.displayName || "User"} to yummy go`);
       navigate('/');
     }
     catch (err) {
@@ -76,10 +76,10 @@ const UserReg: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-extrabold text-gray-900">
-            Create your account ✨
+            Create your account 
           </h1>
           <p className="text-gray-600 mt-1">
-            Join <span className="font-semibold text-orange-600">Yummy Go</span> and start ordering food in minutes 🍕
+            Join <span className="font-semibold text-orange-600">Yummy Go</span> and start ordering food in minutes 
           </p>
         </div>
 
@@ -229,7 +229,7 @@ const UserReg: React.FC = () => {
           <p className="text-center text-gray-600 mt-6">
             Already have an account?{" "}
             <Link
-              to="/log-in"
+              to="/auth/log-in"
               className="text-orange-500 font-semibold hover:text-orange-600 underline"
             >
               Sign in

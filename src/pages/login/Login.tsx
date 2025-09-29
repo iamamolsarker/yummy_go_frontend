@@ -32,7 +32,7 @@ const Login: React.FC = () => {
       const userCredential = await logIn(data.email, data.password);
 
       // success toast
-      toast.success(`Welcome back, ${userCredential.user.displayName || "User"} 🎉`);
+      toast.success(`Welcome back, ${userCredential.user.displayName || "User"} `);
       // Swal.fire("Success!", "You are logged in!", "success");
 
       reset();
@@ -50,7 +50,7 @@ const Login: React.FC = () => {
   const handleGoogleSignIn = async () => {
     try{
       const result = await logInWithGoogle();
-      toast.success(`Welcome back, ${result.user.displayName || "User"} 🎉`);
+      toast.success(`Welcome back, ${result.user.displayName || "User"} to yummy go`);
       navigate("/");
 
     }
@@ -74,11 +74,11 @@ const Login: React.FC = () => {
             </div>
           </div>
           <h1 className="text-3xl font-extrabold text-gray-900">
-            Welcome back 👋
+            Welcome back 
           </h1>
           <p className="text-gray-600 mt-1">
-            Sign in to <span className="font-semibold text-orange-600">Yummy Go</span>
-            & get your food delivered fast 🚀
+            Sign in to <span className="font-semibold text-orange-600">Yummy Go </span>
+            & get your food delivered fast 
           </p>
         </div>
 
@@ -187,7 +187,7 @@ const Login: React.FC = () => {
           <p className="text-center text-gray-600 mt-6">
             New to <span className="font-semibold text-orange-600">Yummy Go</span>?{" "}
             <Link
-              to="/user-reg"
+              to="/auth/user-reg"
               className="text-orange-500 font-semibold hover:text-orange-600 underline"
             >
               Create an account
