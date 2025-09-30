@@ -1,9 +1,10 @@
 import React from 'react';
 import { Outlet } from 'react-router';
-import Navbar from '../shared/navbar/Navbar';
-import Footer from '../shared/footer/Footer';
+import Navbar from '../components/shared/navbar/Navbar';
+import Footer from '../components/shared/footer/Footer';
 
-const RootLayOut = () => {
+
+const RootLayOut: React.FC = () => {
     return (
         <div>
             <Navbar />
