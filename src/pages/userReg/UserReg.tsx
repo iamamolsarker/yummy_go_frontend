@@ -215,7 +215,7 @@ const UserReg: React.FC = () => {
             <div className="flex-1 border-t border-gray-200"></div>
           </div>
 
-
+          {/* Google Sign-In */}
           <button
             onClick={handleGoogleSignIn}
             className="w-full flex items-center justify-center py-3 px-4 
