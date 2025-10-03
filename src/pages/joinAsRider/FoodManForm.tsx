@@ -1,6 +1,4 @@
-"use client";
 import React, { useState } from "react";
-import { Link } from "react-router";
 
 const FoodManForm: React.FC = () => {
     const [step, setStep] = useState<number>(1);
