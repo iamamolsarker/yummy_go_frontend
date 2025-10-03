@@ -8,6 +8,7 @@ import PartnerForm from "../pages/joinAsPartner/PartnerForm";
 import Login from "../pages/login/Login";
 import UserReg from "../pages/userReg/UserReg";
 import AuthLayout from "../layouts/AuthLayout";
+import Forbidden from "../pages/forbidden/Forbidden";
 
 
 
@@ -32,6 +33,10 @@ export const router = createBrowserRouter([
         path: "/partner-form",
         element: <PartnerForm />
       },
+      {
+        path:"forbidden",
+        element:<Forbidden />
+      }
 
     ]
   },
