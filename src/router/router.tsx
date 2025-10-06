@@ -8,7 +8,10 @@ import PartnerForm from "../pages/joinAsPartner/PartnerForm";
 import Login from "../pages/login/Login";
 import UserReg from "../pages/userReg/UserReg";
 import AuthLayout from "../layouts/AuthLayout";
+import ProfilePage from "../pages/profilePage/ProfilePage";
+import Dashboard from "../pages/dashboard/Dashboard";
 import Forbidden from "../pages/forbidden/Forbidden";
+import Restaurants from "../pages/Restaurants/restaurants";
 
 
 
@@ -34,9 +37,21 @@ export const router = createBrowserRouter([
         element: <PartnerForm />
       },
       {
-        path:"forbidden",
-        element:<Forbidden />
-      }
+        path: "forbidden",
+        element: <Forbidden />
+      },
+      {
+        path: "/dashboard",
+        element: <Dashboard />
+      },
+      {
+        path: "profile/:email",
+        element: <ProfilePage />
+      },
+      {
+        path: "restaurants",
+        element: <Restaurants/>
+      },
 
     ]
   },
@@ -52,6 +67,8 @@ export const router = createBrowserRouter([
         path: "user-reg",
         element: <UserReg />
       },
+
+
     ]
   },
   {

@@ -16,7 +16,7 @@ const HeroSection: React.FC = () => {
               <span className="text-[#ef451c]">& Right </span>
               <span className="text-gray-800">To Your Door</span>
             </h1>
-            
+
             <p className="text-xl text-gray-600 max-w-lg mx-auto lg:mx-0">
               Order dishes from favorite restaurants near you.
             </p>
@@ -32,18 +32,25 @@ const HeroSection: React.FC = () => {
                     className="flex-1 outline-none text-gray-700 placeholder-gray-400"
                   />
                 </div>
-                <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white px-2 md:px-8 py-3 rounded-xl font-semibold flex items-center gap-1 md:gap-2 transition-colors duration-300">
+
+                {/* <button className="bg-[#ef451c] hover:bg-[#d63e18] text-white px-2 md:px-8 py-3 rounded-xl font-semibold flex items-center gap-1 md:gap-2 transition-colors duration-300">
                   <Search className="w-4 h-4 md:w-5 md:h-5" />
                   <p> Find Food</p>
                  
-                </button>
+                </button> */}
+
+                <Link to="/restaurants" className="bg-[#ef451c] hover:bg-[#d63e18] text-white px-2 md:px-8 py-3 rounded-xl font-semibold flex items-center gap-1 md:gap-2 transition-colors duration-300">
+                  <Search className="w-4 h-4 md:w-5 md:h-5" />
+                  <p>Find Food</p>
+                </Link>
+
               </div>
             </div>
             <div className="pt-5">
               <p className="text-gray-600 text-xl">
                 Are you a Restaurant Owner?{" "}
                 <Link to="/partner-form">   <span className="text-[#ef451c] cursor-pointer font-medium underline">Join as a Partner</span></Link>
-             
+
               </p>
             </div>
           </div>
@@ -54,7 +61,7 @@ const HeroSection: React.FC = () => {
             <div className="relative">
               {/* Subtle background decoration */}
               <div className="absolute inset-0 bg-gradient-to-br from-[#ef451c]/10 to-transparent rounded-3xl transform rotate-3"></div>
-              
+
               <img
                 src={bannerImg}
                 alt="Delivery person with food"
