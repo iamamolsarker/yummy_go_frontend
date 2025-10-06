@@ -1,5 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { User, Key, Edit, Crown, Phone, Mail, Image as ImageIcon, Upload, X, Plus } from 'lucide-react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import React, { useState, useRef, useEffect, type JSX } from 'react';
+import { User, Edit, Crown, Phone, Mail, Image as ImageIcon, X, Plus } from 'lucide-react';
 
 // --- Helper Components (No changes here) ---
 type SectionHeaderProps = { title: string; info?: boolean; };
