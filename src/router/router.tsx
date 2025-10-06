@@ -11,7 +11,8 @@ import AuthLayout from "../layouts/AuthLayout";
 import ProfilePage from "../pages/profilePage/ProfilePage";
 import Dashboard from "../pages/dashboard/Dashboard";
 import Forbidden from "../pages/forbidden/Forbidden";
-import Restaurants from "../pages/Restaurants/restaurants";
+import Restaurants from "../pages/restaurants/Restaurants";
+
 
 
 

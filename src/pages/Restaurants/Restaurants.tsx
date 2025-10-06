@@ -1,5 +1,5 @@
 // Import necessary modules and icons from React and lucide-react
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Search, Star, Heart, Clock, ChevronRight } from 'lucide-react';
 
 // Define the TypeScript type for a Restaurant object
