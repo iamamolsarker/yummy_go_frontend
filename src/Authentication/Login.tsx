@@ -9,9 +9,10 @@ import {
   FaEye,
   FaEyeSlash
 } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router";
-import useAuth from "../../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
+import SocialLogin from "./SocialLogin";
+
 
 type LoginForm = {
   email: string;
@@ -25,7 +26,7 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const { logIn, logInWithGoogle, loading, setLoading } = useAuth();
+  const { logIn, loading, setLoading } = useAuth();
 
   const onSubmit = async (data: LoginForm) => {
     try {
@@ -47,21 +48,7 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      const result = await logInWithGoogle();
-      toast.success(`Welcome back, ${result.user.displayName || "User"} to yummy go`);
-      navigate("/");
 
-    }
-    catch (err) {
-      console.error(err);
-      toast.error("Google Sign-In failed. Please try again.");
-    }
-    finally {
-      setLoading(false);
-    }
-  }
 
   return (
     <div className="min-h-screen bg-[#f7f9fa] flex items-center justify-center p-6 mb-6">
@@ -173,15 +160,8 @@ const Login: React.FC = () => {
             <div className="flex-1 border-t border-gray-200"></div>
           </div>
 
-          {/* Google Button */}
-          <button
-            onClick={handleGoogleSignIn}
-            className="w-full flex items-center justify-center py-3 px-4 
-            border border-[#dadce0] rounded-xl bg-white text-[#3c4043] font-medium 
-            hover:bg-[#f7f9fa] transition-all shadow-sm">
-            <FcGoogle className="w-5 h-5 mr-3" />
-            Continue with Google
-          </button>
+          {/* Social Login Component */}
+          <SocialLogin />
 
           {/* Sign Up */}
           <p className="text-center text-gray-600 mt-6">

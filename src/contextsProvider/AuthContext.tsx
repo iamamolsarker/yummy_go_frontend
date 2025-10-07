@@ -12,6 +12,8 @@ interface AuthContextType {
   logIn: (email: string, password: string) => Promise<UserCredential>;
   logOut: () => Promise<void>;
   logInWithGoogle: () => Promise<UserCredential>;
+  logInWithGoogleRedirect: () => Promise<never>;
+  getGoogleRedirectResult: () => Promise<UserCredential | null>;
   loading: boolean;
   setLoading: (loading: boolean) => void;
   user: User | null;

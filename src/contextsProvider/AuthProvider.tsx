@@ -4,6 +4,8 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   updateProfile,
 } from "firebase/auth";
@@ -49,13 +51,36 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     setLoading(true);
     return signInWithEmailAndPassword(auth, email, password);
   };
-  // log in with google
+  // log in with google (popup method)
   const logInWithGoogle = () => {
     setLoading(true);
     return signInWithPopup(auth, provider);
   };
 
+  // log in with google (redirect method - fallback for COOP issues)
+  const logInWithGoogleRedirect = () => {
+    setLoading(true);
+    return signInWithRedirect(auth, provider);
+  };
+
+  // get redirect result
+  const getGoogleRedirectResult = () => {
+    return getRedirectResult(auth);
+  };
+
   useEffect(() => {
+    // Check for redirect result on app load
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          console.log("Google redirect sign-in successful:", result.user);
+          // Handle successful redirect sign-in here if needed
+        }
+      })
+      .catch((error) => {
+        console.error("Error getting redirect result:", error);
+      });
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
@@ -76,6 +101,8 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     logIn,
     logOut,
     logInWithGoogle,
+    logInWithGoogleRedirect,
+    getGoogleRedirectResult,
     loading,
     setLoading,
     user,
