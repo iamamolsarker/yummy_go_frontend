@@ -5,13 +5,13 @@ import Home from "../pages/homePage/Home";
 import Error from "../pages/error page/Error";
 import FoodManForm from "../pages/joinAsRider/FoodManForm";
 import PartnerForm from "../pages/joinAsPartner/PartnerForm";
-import Login from "../pages/login/Login";
-import UserReg from "../pages/userReg/UserReg";
 import AuthLayout from "../layouts/AuthLayout";
 import ProfilePage from "../pages/profilePage/ProfilePage";
 import Dashboard from "../pages/dashboard/Dashboard";
 import Forbidden from "../pages/forbidden/Forbidden";
 import Restaurants from "../pages/Restaurants/Restaurants";
+import UserReg from "../Authentication/UserReg";
+import Login from "../Authentication/Login";
 
 
 
