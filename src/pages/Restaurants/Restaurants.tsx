@@ -31,28 +31,28 @@ export default function Restaurants() {
 
     // Demo data for the "Daily Deals" section
     const dailyDeals = [
-        { imageUrl: 'https://images.unsplash.com/photo-1565557623262-b9a35c298957?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8YmlyeWFuaXx8fHx8fDE3Mjk2NjExMTA&ixlib=rb-4.0.3&q=80&w=1080', text: '25% OFF TEHARI GHAR' },
+        { imageUrl: 'https://i.ibb.co.com/hRMGhGJX/kacchi.jpg', text: '25% OFF TEHARI GHAR' },
         { imageUrl: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8YnVyZ2VyfHx8fHx8MTcyOTY2MTEzNg&ixlib=rb-4.0.3&q=80&w=1080', text: 'SAVOR THE BEST DEAL - 50% OFF' },
-        { imageUrl: 'https://images.unsplash.com/photo-1599974579605-5951d3a5a528?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8ZnJpZWQgY2hpY2tlbnx8fHx8fDE3Mjk2NjExNjQ&ixlib=rb-4.0.3&q=80&w=1080', text: 'UP TO 50% OFF' },
-        { imageUrl: 'https://images.unsplash.com/photo-1627907222043-9c1a4d0f6e65?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8c291cHx8fHx8fDE3Mjk2NjExODk&ixlib=rb-4.0.3&q=80&w=1080', text: 'SUPER SAVER SOUP' },
+        { imageUrl: 'https://i.ibb.co.com/zVS5Mxqc/50-off.jpg', text: 'UP TO 50% OFF' },
+        { imageUrl: 'https://i.ibb.co.com/yBkZvdz3/savor.jpg', text: 'SUPER SAVER SOUP' },
     ];
 
     // Demo data for the "Favourite Cuisines" section
     const favouriteCuisines = [
-        { name: 'Biryani', imageUrl: 'https://images.unsplash.com/photo-1589301760014-d929f39791e8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8YmlyeWFuaXx8fHx8fDE3Mjk2NjEyMTM&ixlib=rb-4.0.3&q=80&w=1080' },
+        { name: 'Biryani', imageUrl: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
         { name: 'Burger', imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8YnVyZ2VyfHx8fHx8MTcyOTY2MTIyNQ&lib=rb-4.0.3&q=80&w=1080' },
         { name: 'Pizza', imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8cGl6emF8fHx8fHwxNzI5NjYxMjM3&ixlib=rb-4.0.3&q=80&w=1080' },
-        { name: 'Chicken', imageUrl: 'https://images.unsplash.com/photo-1606554863333-c7b4c6a3d640?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8Z3JpbGxlZCBjaGlja2VufHx8fHx8MTcyOTY2MTI1MA&ixlib=rb-4.0.3&q=80&w=1080' },
-        { name: 'Fast Food', imageUrl: 'https://images.unsplash.com/photo-1626082910196-162c451f893d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8ZnJpZWRjaGlja2VuLGZyaWVzfHx8fHx8MTcyOTY2MTI2Mg&ixlib=rb-4.0.3&q=80&w=1080' },
+        { name: 'Chicken', imageUrl: 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+        { name: 'Fast Food', imageUrl: 'https://images.unsplash.com/photo-1594179047519-f347310d3322?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
         { name: 'Birthday Cake', imageUrl: 'https://images.unsplash.com/photo-1588195538326-c5b1e9f80a1b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8YmlydGhkYXkgY2FrZXx8fHx8fDE3Mjk2NjEyNzU&ixlib=rb-4.0.3&q=80&w=1080' },
     ];
 
     // Demo data for the list of restaurants
     const restaurantsData: Restaurant[] = [
         { name: 'Dear Dhaka', cuisine: 'Snacks', rating: 4.6, reviews: '3k', likes: '46.1k', deliveryTime: '10 - 25 min', imageUrl: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8Z3JpbGxlZCBmb29kfHx8fHx8MTcyOTY2MTM0MQ&ixlib=rb-4.0.3&q=80&w=1080' },
-        { name: 'Thai Bistro', cuisine: 'Thai', rating: 3.8, reviews: '2k', likes: '44.1k', deliveryTime: '10 - 25 min', imageUrl: 'https://images.unsplash.com/photo-1543339308-43e59d6b70a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8dGhhaSBmb29kfHx8fHx8MTcyOTY2MTM3MA&ixlib=rb-4.0.3&q=80&w=1080' },
-        { name: 'Indian Kitchen', cuisine: 'Indian', rating: 3.6, reviews: '2k', likes: '44.1k', deliveryTime: '10 - 25 min', imageUrl: 'https://images.unsplash.com/photo-1601050690597-df0568f70b50?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8aW5kaWFuIGtlYmFibHx8fHx8fDE3Mjk2NjEzODQ&ixlib=rb-4.0.3&q=80&w=1080' },
-        { name: 'Pizza Paradise', cuisine: 'Pizza', rating: 4.8, reviews: '5k', likes: '52.3k', deliveryTime: '15 - 30 min', imageUrl: 'https://images.unsplash.com/photo-1594007654729-407eedc4be65?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8cGl6emF8fHx8fHwxNzI5NjYxMzk4&ixlib=rb-4.0.3&q=80&w=1080' },
+        { name: 'Thai Bistro', cuisine: 'Thai', rating: 3.8, reviews: '2k', likes: '44.1k', deliveryTime: '10 - 25 min', imageUrl: 'https://images.unsplash.com/photo-1509771058437-91e2ce34b90d?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+        { name: 'Indian Kitchen', cuisine: 'Indian', rating: 3.6, reviews: '2k', likes: '44.1k', deliveryTime: '10 - 25 min', imageUrl: 'https://images.unsplash.com/photo-1725483990172-e5203cc96ef5?q=80&w=1225&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+        { name: 'Pizza Paradise', cuisine: 'Pizza', rating: 4.8, reviews: '5k', likes: '52.3k', deliveryTime: '15 - 30 min', imageUrl: 'https://images.unsplash.com/photo-1710917159375-985a60e083d8?q=80&w=721&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
     ];
 
     // Function to handle changes in the cuisine checkboxes

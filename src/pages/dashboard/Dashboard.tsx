@@ -40,7 +40,7 @@ const StatCard = ({
 );
 
 export default function Dashboard() {
-  const user = { name: "Yousuf" };
+  const user = { name: "" };
 
   // Dummy data
   const orders = [
@@ -97,7 +97,7 @@ export default function Dashboard() {
         <header className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Welcome back, {user.name}! 👋
+              Welcome back To Dashboard {user.name}
             </h1>
             <p className="text-gray-500 mt-1">
               Here’s your full delivery control center.
