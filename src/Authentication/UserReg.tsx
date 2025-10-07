@@ -8,11 +8,12 @@ import {
   FaEye,
   FaEyeSlash
 } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router";
-import useAuth from "../../hooks/useAuth";
-import useAxiosSecure from "../../hooks/useAxiosSecure";
+
 import { toast } from "react-toastify";
+import useAxiosSecure from "../hooks/useAxiosSecure";
+import useAuth from "../hooks/useAuth";
+import SocialLogin from "./SocialLogin";
 
 type RegisterForm = {
   name: string;
@@ -22,7 +23,7 @@ type RegisterForm = {
 };
 
 const UserReg: React.FC = () => {
-  const { createUser, updateUser, loading, setLoading, logInWithGoogle } = useAuth();
+  const { createUser, updateUser, loading, setLoading } = useAuth();
   const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterForm>();
@@ -99,39 +100,7 @@ const UserReg: React.FC = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-      const result = await logInWithGoogle();
-      const user = result.user;
-      
-      // Save user info to database
-      if (user.email) {
-        const userInfo = {
-          name: user.displayName || "Google User",
-          email: user.email,
-        };
-        
-        try {
-          const userRes = await axiosSecure.post("/users", userInfo);
-          console.log("Google user saved to database:", userRes.data);
-        } catch (dbError) {
-          console.error("Error saving Google user to database:", dbError);
-          // Don't fail the sign-in if database save fails
-        }
-      }
-      
-      toast.success(`Welcome, ${user.displayName || "User"} to Yummy Go!`);
-      navigate('/');
-    }
-    catch (err) {
-      console.error(err);
-      toast.error("Google Sign-In failed. Please try again.");
-    }
-    finally {
-      setLoading(false);
-    }
-  }
+
 
   return (
     <div className="min-h-screen bg-[#f7f9fa] flex items-center justify-center p-6 mb-8">
@@ -324,15 +293,8 @@ const UserReg: React.FC = () => {
             <div className="flex-1 border-t border-gray-200"></div>
           </div>
 
-          {/* Google Sign-In */}
-          <button
-            onClick={handleGoogleSignIn}
-            className="w-full flex items-center justify-center py-3 px-4 
-            border border-[#dadce0] rounded-xl bg-white text-[#3c4043] font-medium 
-            hover:bg-[#f7f9fa] transition-all shadow-sm">
-            <FcGoogle className="w-5 h-5 mr-3" />
-            Sign up with Google
-          </button>
+          {/* Social Login Component */}
+          <SocialLogin />
 
           {/* Redirect to Login */}
           <p className="text-center text-gray-600 mt-6">
