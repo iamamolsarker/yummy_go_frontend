@@ -9,9 +9,9 @@ import AuthLayout from "../layouts/AuthLayout";
 import ProfilePage from "../pages/profilePage/ProfilePage";
 import Dashboard from "../pages/dashboard/Dashboard";
 import Forbidden from "../pages/forbidden/Forbidden";
-import Restaurants from "../pages/Restaurants/Restaurants";
 import UserReg from "../Authentication/UserReg";
 import Login from "../Authentication/Login";
+import Restaurants from "../pages/restaurants/Restaurants";
 
 
 
