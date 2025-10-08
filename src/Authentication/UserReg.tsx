@@ -8,10 +8,12 @@ import {
   FaEye,
   FaEyeSlash
 } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router";
-import useAuth from "../../hooks/useAuth";
+
 import { toast } from "react-toastify";
+import useAxiosSecure from "../hooks/useAxiosSecure";
+import useAuth from "../hooks/useAuth";
+import SocialLogin from "./SocialLogin";
 
 type RegisterForm = {
   name: string;
@@ -21,27 +23,71 @@ type RegisterForm = {
 };
 
 const UserReg: React.FC = () => {
-  const { createUser, updateUser, loading, setLoading, logInWithGoogle } = useAuth();
+  const { createUser, updateUser, loading, setLoading } = useAuth();
+  const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterForm>();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Password strength checker
+  const getPasswordStrength = (password: string) => {
+    if (!password) return { strength: 0, label: "" };
+    
+    let strength = 0;
+    const checks = {
+      length: password.length >= 6,
+      lowercase: /[a-z]/.test(password),
+      uppercase: /[A-Z]/.test(password),
+      number: /\d/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    };
+
+    strength = Object.values(checks).filter(Boolean).length;
+    
+    const labels = ["Very Weak", "Weak", "Fair", "Good", "Strong"];
+    const colors = ["text-red-500", "text-orange-500", "text-yellow-500", "text-blue-500", "text-green-500"];
+    
+    return {
+      strength: (strength / 5) * 100,
+      label: labels[Math.min(strength - 1, 4)] || "",
+      color: colors[Math.min(strength - 1, 4)] || "text-gray-400",
+      checks
+    };
+  };
+
+  const password = watch("password");
+  const passwordStrength = getPasswordStrength(password || "");
 
   const onSubmit = async (data: RegisterForm) => {
     setLoading(true);
     try {
       // 1️⃣ Create the user
       await createUser(data.email, data.password);
-
+      
       // 2️⃣ Update user profile with name
       if (data.name) {
         await updateUser({ displayName: data.name });
       }
 
-      // 3️⃣ Success toast
-      toast.success(` Welcome to Yummy Go, ${data.name}!`);
+      // 3️⃣ Save user info to database
+      const userInfo = {
+        name: data.name,
+        email: data.email,
+      };
+      
+      try {
+        const userRes = await axiosSecure.post("/users", userInfo);
+        console.log("User saved to database:", userRes.data);
+      } catch (dbError) {
+        console.error("Error saving user to database:", dbError);
+        // Don't fail the registration if database save fails
+      }
 
-      // 4️⃣ Reset + Navigate
+      // 4️⃣ Success toast
+      toast.success(`Welcome to Yummy Go, ${data.name}!`);
+
+      // 5️⃣ Navigate to home
       navigate("/");
     } catch (err) {
       if (err instanceof Error) {
@@ -54,21 +100,7 @@ const UserReg: React.FC = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      const result = await logInWithGoogle();
-      toast.success(`Welcome, ${result.user.displayName || "User"} to yummy go`);
-      navigate('/');
-    }
-    catch (err) {
-      console.error(err);
-      toast.error("Google Sign-In failed. Please try again.");
-    }
-    finally {
-      
-      setLoading(false);
-    }
-  }
+
 
   return (
     <div className="min-h-screen bg-[#f7f9fa] flex items-center justify-center p-6 mb-8">
@@ -141,7 +173,11 @@ const UserReg: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   {...register("password", {
                     required: "Password is required",
-                    minLength: { value: 6, message: "Password must be at least 6 characters" }
+                    minLength: { value: 6, message: "Password must be at least 6 characters" },
+                    pattern: {
+                      value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                      message: "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+                    }
                   })}
                   placeholder="••••••••"
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl 
@@ -157,6 +193,45 @@ const UserReg: React.FC = () => {
                 </button>
               </div>
               {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+              
+              {/* Password Strength Indicator */}
+              {password && (
+                <div className="mt-2">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs text-gray-500">Password Strength</span>
+                    <span className={`text-xs font-medium ${passwordStrength.color}`}>
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                    <div 
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        passwordStrength.strength <= 20 ? 'bg-red-500' :
+                        passwordStrength.strength <= 40 ? 'bg-orange-500' :
+                        passwordStrength.strength <= 60 ? 'bg-yellow-500' :
+                        passwordStrength.strength <= 80 ? 'bg-blue-500' : 'bg-green-500'
+                      }`}
+                      style={{ width: `${passwordStrength.strength}%` }}
+                    ></div>
+                  </div>
+                  <div className="mt-1 space-y-1">
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      <span className={passwordStrength.checks?.length ? 'text-green-500' : 'text-gray-400'}>
+                        ✓ 6+ characters
+                      </span>
+                      <span className={passwordStrength.checks?.lowercase ? 'text-green-500' : 'text-gray-400'}>
+                        ✓ lowercase
+                      </span>
+                      <span className={passwordStrength.checks?.uppercase ? 'text-green-500' : 'text-gray-400'}>
+                        ✓ uppercase
+                      </span>
+                      <span className={passwordStrength.checks?.number ? 'text-green-500' : 'text-gray-400'}>
+                        ✓ number
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Confirm Password */}
@@ -199,11 +274,14 @@ const UserReg: React.FC = () => {
             >
               {loading ? (
                 <div className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-t-2 border-white border-solid rounded-full animate-spin mr-2"></div>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
                   Creating account...
                 </div>
               ) : (
-                "Sign Up"
+                "Create Account"
               )}
             </button>
           </form>
@@ -215,15 +293,8 @@ const UserReg: React.FC = () => {
             <div className="flex-1 border-t border-gray-200"></div>
           </div>
 
-
-          <button
-            onClick={handleGoogleSignIn}
-            className="w-full flex items-center justify-center py-3 px-4 
-            border border-[#dadce0] rounded-xl bg-white text-[#3c4043] font-medium 
-            hover:bg-[#f7f9fa] transition-all shadow-sm">
-            <FcGoogle className="w-5 h-5 mr-3" />
-            Sign up with Google
-          </button>
+          {/* Social Login Component */}
+          <SocialLogin />
 
           {/* Redirect to Login */}
           <p className="text-center text-gray-600 mt-6">

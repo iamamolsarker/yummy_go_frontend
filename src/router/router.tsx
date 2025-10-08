@@ -5,9 +5,16 @@ import Home from "../pages/homePage/Home";
 import Error from "../pages/error page/Error";
 import FoodManForm from "../pages/joinAsRider/FoodManForm";
 import PartnerForm from "../pages/joinAsPartner/PartnerForm";
-import Login from "../pages/login/Login";
-import UserReg from "../pages/userReg/UserReg";
 import AuthLayout from "../layouts/AuthLayout";
+import DashboardLayout from "../layouts/DashboardLayout";
+import ProfilePage from "../pages/profilePage/ProfilePage";
+import Forbidden from "../pages/forbidden/Forbidden";
+import UserReg from "../Authentication/UserReg";
+import Login from "../Authentication/Login";
+import Restaurants from "../pages/Restaurants/Restaurants";
+import PrivateRoute from "../routes/PrivateRoute";
+import DashboardHome from "../Dashboard/DashboardHome";
+
 
 
 
@@ -32,6 +39,33 @@ export const router = createBrowserRouter([
         path: "/partner-form",
         element: <PartnerForm />
       },
+      {
+        path: "forbidden",
+        element: <Forbidden />
+      },
+      {
+        path: "profile/:email",
+        element: <ProfilePage />
+      },
+      {
+        path: "restaurants",
+        element: <Restaurants />
+      },
+
+    ]
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <PrivateRoute>
+        <DashboardLayout />
+      </PrivateRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <DashboardHome />
+      },
 
     ]
   },
@@ -47,6 +81,8 @@ export const router = createBrowserRouter([
         path: "user-reg",
         element: <UserReg />
       },
+
+
     ]
   },
   {

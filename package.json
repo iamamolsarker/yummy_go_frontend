@@ -12,6 +12,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@tailwindcss/vite": "^4.1.13",
+    "@tanstack/react-query": "^5.90.2",
     "axios": "^1.12.2",
     "firebase": "^12.3.0",
     "framer-motion": "^12.23.22",
@@ -26,12 +27,14 @@
     "react-leaflet": "^5.0.0",
     "react-router": "^7.9.1",
     "react-toastify": "^11.0.5",
+    "sweetalert": "^2.1.2",
     "sweetalert2": "^11.23.0",
     "tailwindcss": "^4.1.13",
     "zod": "^4.1.11"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@tanstack/react-query-devtools": "^5.90.2",
     "@types/leaflet": "^1.9.20",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
