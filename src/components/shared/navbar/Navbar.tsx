@@ -6,12 +6,13 @@ import logo from "/yummy-go-logo.png";
 import { Link } from "react-router";
 import useAuth from "../../../hooks/useAuth";
 import { toast } from "react-toastify";
+import useUserRole from "../../../hooks/useUserRole";
 
 const Navbar: React.FC = () => {
   // Replace with your AuthContext or props
   const { user, logOut } = useAuth();
   console.log(user)
-
+  const { isAdmin, isRider, isRestaurantOwner } = useUserRole();
 
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -52,11 +53,11 @@ const Navbar: React.FC = () => {
         <div >
           <Link to={"/"} className="flex items-center gap-2">
             <img src={logo} alt="Yummy Go" className="h-14" />
-             <div className="hidden md:block">
-            <h1 className="text-2xl font-bold text-[#EF451C]">Yummy Go</h1>
-          </div>
+            <div className="hidden md:block">
+              <h1 className="text-2xl font-bold text-[#EF451C]">Yummy Go</h1>
+            </div>
           </Link>
-         
+
         </div>
 
         {/* Right Side */}
@@ -100,13 +101,16 @@ const Navbar: React.FC = () => {
                   >
                     <FaUser className="mr-2 text-gray-500" /> Profile
                   </Link>
-                  <Link
-                    to="/dashboard"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-[#ffe5df] hover:text-[#ef451c]"
-                    onClick={() => setOpen(false)}
-                  >
-                    <FaUserCircle className="mr-2 text-gray-500" /> Dashboard
-                  </Link>
+                  {/* dynamic dashboard link */}
+                  {(isAdmin || isRider || isRestaurantOwner) && (
+                    <Link
+                      to="/dashboard"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-[#ffe5df] hover:text-[#ef451c]"
+                      onClick={() => setOpen(false)}
+                    >
+                      <FaUserCircle className="mr-2 text-gray-500" /> Dashboard
+                    </Link>
+                  )}
                   <Link
                     to="/settings"
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-[#ffe5df] hover:text-[#ef451c]"
