@@ -15,6 +15,7 @@ import PrivateRoute from "../routes/PrivateRoute";
 import DashboardHome from "../Dashboard/DashboardHome";
 import UserManagement from "../Dashboard/Admin/userManegement/UserManagement";
 import Restaurants from "../pages/Restaurants/Restaurants";
+import RiderManagement from "../Dashboard/Admin/Riders/RidersManagement";
 
 
 
@@ -70,6 +71,10 @@ export const router = createBrowserRouter([
       {
         path: "admin/users",
         element: <UserManagement/>
+      },
+      {
+        path: "admin/riders",
+        element: <RiderManagement></RiderManagement>
       }
 
     ]
