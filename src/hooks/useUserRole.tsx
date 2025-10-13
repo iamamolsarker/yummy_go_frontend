@@ -34,7 +34,8 @@ const useUserRole = (): UserRoleReturn => {
             }
             try {
                 const res = await axiosSecure.get(`/users/${user.email}/role`);
-                return res.data.role || 'user';
+                console.log('User role:', res.data.data.role);
+                return res.data.data.role || 'user';
 
             } catch (error) {
                 console.error('Error fetching user role:', error);
