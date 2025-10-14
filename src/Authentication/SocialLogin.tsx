@@ -21,7 +21,7 @@ interface LocationState {
 const SocialLogin: React.FC = () => {
   const { logInWithGoogle, logInWithGoogleRedirect } = useAuth();
   const location = useLocation() as { state?: LocationState };
-  const axiosInstance = useAxios();
+  const axiosPublic = useAxios();
   const navigate = useNavigate();
 
   const handleGoogleSignIn = (): void => {
@@ -39,7 +39,7 @@ const SocialLogin: React.FC = () => {
         };
 
         try {
-          const userRes = await axiosInstance.post("/users", userInfo);
+          const userRes = await axiosPublic.post("/users", userInfo);
           console.log(userRes.data);
         } catch (dbError) {
           console.warn("Database save failed (user might already exist):", dbError);
