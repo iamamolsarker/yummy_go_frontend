@@ -11,10 +11,11 @@ import ProfilePage from "../pages/profilePage/ProfilePage";
 import Forbidden from "../pages/forbidden/Forbidden";
 import UserReg from "../Authentication/UserReg";
 import Login from "../Authentication/Login";
-import Restaurants from "../pages/restaurants/Restaurants";
 import PrivateRoute from "../routes/PrivateRoute";
 import DashboardHome from "../Dashboard/DashboardHome";
 import UserManagement from "../Dashboard/Admin/userManegement/UserManagement";
+import RestaurantOwnerHome from "../Dashboard/Restaurant_Owner/RestaurantOwnerHome";
+import Restaurants from "../pages/Restaurants/Restaurants";
 
 
 
@@ -70,6 +71,10 @@ export const router = createBrowserRouter([
       {
         path: "admin/users",
         element: <UserManagement/>
+      },
+      {
+        path: "admin/restaurants",
+        element: <RestaurantOwnerHome/>
       }
 
     ]
