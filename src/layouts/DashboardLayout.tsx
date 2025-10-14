@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation, Navigate } from 'react-router';
+import { Outlet, Link, useLocation, Navigate, useNavigate } from 'react-router';
 import { 
   Home, 
   Settings, 
@@ -29,6 +29,7 @@ const DashboardLayout: React.FC = () => {
   const { user, logOut } = useAuth();
   const { role, roleLoading, isAdmin, isRider, isRestaurantOwner } = useUserRole();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Show loading while checking user role
   if (roleLoading) {
@@ -51,6 +52,7 @@ const DashboardLayout: React.FC = () => {
     try {
       await logOut();
       toast.success("Logged out successfully");
+      navigate('/'); // Redirect to home page after logout
     } catch (error) {
       console.error('Logout error:', error);
       toast.error("Logout failed");
