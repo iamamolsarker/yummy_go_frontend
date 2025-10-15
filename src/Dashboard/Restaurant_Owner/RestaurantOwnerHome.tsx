@@ -2,7 +2,7 @@ import React from 'react';
 
 const RestaurantOwnerHome: React.FC = () => {
   return (
-    <div>RestaurantOwnerHome</div>
+    <div>Hello RestaurantOwnerHome</div>
   )
 }
 
