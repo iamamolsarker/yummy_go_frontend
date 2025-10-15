@@ -17,6 +17,7 @@ import UserManagement from "../Dashboard/Admin/userManegement/UserManagement";
 import Restaurants from "../pages/Restaurants/Restaurants";
 import RiderManagement from "../Dashboard/Admin/Riders/RidersManagement";
 import OrdersManagement from "../Dashboard/Admin/Orders/OrdersManagement";
+import RestaurantManagement from "../Dashboard/Admin/Restaurants/RestaurantManagement";
 
 
 
@@ -71,7 +72,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "admin/users",
-        element: <UserManagement/>
+        element: <UserManagement />
       },
       {
         path: "admin/riders",
@@ -80,6 +81,10 @@ export const router = createBrowserRouter([
       {
         path: "admin/orders",
         element: <OrdersManagement></OrdersManagement>
+      },
+      {
+        path: "admin/restaurants",
+        element: <RestaurantManagement />
       }
 
     ]

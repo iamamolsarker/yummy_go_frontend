@@ -1,9 +1,11 @@
 import React from 'react';
 
-const RestaurantOwnerHome: React.FC = () => {
+const RestaurantOwnerHome = () => {
   return (
-    <div>RestaurantOwnerHome</div>
-  )
-}
+    <div>
+      Hello Owner home
+    </div>
+  );
+};
 
 export default RestaurantOwnerHome;
