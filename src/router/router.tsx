@@ -75,6 +75,10 @@ export const router = createBrowserRouter([
       {
         path: "admin/riders",
         element: <RiderManagement></RiderManagement>
+      },
+      {
+        path: "admin/restaurants",
+        element: <div>Restaurant Management</div>
       }
 
     ]
