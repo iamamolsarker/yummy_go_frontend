@@ -11,9 +11,9 @@ import {
 import { Link, useNavigate } from "react-router";
 
 import { toast } from "react-toastify";
-import useAxiosSecure from "../hooks/useAxiosSecure";
 import useAuth from "../hooks/useAuth";
 import SocialLogin from "./SocialLogin";
+import useAxios from "../hooks/useAxios";
 
 type RegisterForm = {
   name: string;
@@ -24,7 +24,7 @@ type RegisterForm = {
 
 const UserReg: React.FC = () => {
   const { createUser, updateUser, loading, setLoading } = useAuth();
-  const axiosSecure = useAxiosSecure();
+  const axiosPublic = useAxios();
   const navigate = useNavigate();
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterForm>();
   const [showPassword, setShowPassword] = useState(false);
@@ -77,7 +77,7 @@ const UserReg: React.FC = () => {
       };
       
       try {
-        const userRes = await axiosSecure.post("/users", userInfo);
+        const userRes = await axiosPublic.post("/users", userInfo);
         console.log("User saved to database:", userRes.data);
       } catch (dbError) {
         console.error("Error saving user to database:", dbError);
