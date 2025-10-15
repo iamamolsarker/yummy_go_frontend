@@ -16,7 +16,7 @@ import DashboardHome from "../Dashboard/DashboardHome";
 import UserManagement from "../Dashboard/Admin/userManegement/UserManagement";
 import Restaurants from "../pages/Restaurants/Restaurants";
 import RiderManagement from "../Dashboard/Admin/Riders/RidersManagement";
-import RestaurantOwnerHome from "../Dashboard/Restaurant_Owner/RestaurantOwnerHome";
+import RestaurantManagement from "../Dashboard/Admin/Restaurants/RestaurantManagement";
 
 
 
@@ -79,7 +79,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "admin/restaurants",
-        element: <RestaurantOwnerHome></RestaurantOwnerHome>
+        element: <RestaurantManagement/>
       }
 
     ]
