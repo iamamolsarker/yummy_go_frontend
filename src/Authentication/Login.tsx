@@ -48,6 +48,10 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleReturnHome = () => {
+    navigate("/")
+  }
+
 
 
   return (
@@ -56,7 +60,7 @@ const Login: React.FC = () => {
         {/* Logo & Title */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 rounded-3xl shadow-lg">
+            <div onClick={handleReturnHome} className="bg-gradient-to-r from-orange-500 to-red-500 p-4 rounded-3xl shadow-lg">
               <FaUtensils className="text-white text-3xl" />
             </div>
           </div>
@@ -64,7 +68,7 @@ const Login: React.FC = () => {
             Welcome back
           </h1>
           <p className="text-gray-600 mt-1">
-            Sign in to <span className="font-semibold text-orange-600">Yummy Go </span>
+            Sign in to <span onClick={handleReturnHome} className="font-semibold text-orange-600">Yummy Go </span>
             & get your food delivered fast
           </p>
         </div>
