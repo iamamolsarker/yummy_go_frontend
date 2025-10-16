@@ -1,2 +1,13 @@
 @import "tailwindcss";
 @import 'react-toastify/dist/ReactToastify.css';
+
+
+/* Hide scrollbar but keep scroll functionality */
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+.sidebar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
