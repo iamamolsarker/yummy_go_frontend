@@ -15,6 +15,7 @@ import {
   LogOut,
   Menu,
   X,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   User as UserIcon,
   Package,
   MapPin,

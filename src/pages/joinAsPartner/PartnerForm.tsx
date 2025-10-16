@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import {
   Building2,
   User,
@@ -12,29 +15,67 @@ import {
   ScrollText,
 } from "lucide-react";
 
+// Import hooks from your project's correct path
+import useAuth from "../../hooks/useAuth";
+import useAxios from "../../hooks/useAxios";
+
+// Define the type for our form data
+type PartnerFormData = {
+  companyName: string;
+  ownerName: string;
+  mobile: string;
+  tradeLicense: string;
+  email: string;
+  password: string;
+};
+
 const PartnerForm: React.FC = () => {
   const navigate = useNavigate();
+  const { createUser, updateUser, loading, setLoading } = useAuth();
+  const axiosPublic = useAxios();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<PartnerFormData>();
   
   const [showPassword, setShowPassword] = useState(false);
 
-  const [formData, setFormData] = useState({
-    companyName: "Code Warriors Ltd",
-    ownerName: "Code Warriors",
-    mobile: "01712345678",
-    tradeLicense: "99999999999999",
-    email: "codewarriors@email.com",
-    password: "",
-  });
+  const onSubmit = async (data: PartnerFormData) => {
+    setLoading(true);
+    try {
+      // 1. Create the user in Firebase Authentication
+      await createUser(data.email, data.password);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+      // 2. Update the Firebase user's profile with their name
+      await updateUser({ displayName: data.ownerName });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form Submitted Data:", formData);
-    navigate("/dashboard");
+      // 3. Prepare the user information object for your backend database
+      const partnerInfo = {
+        name: data.ownerName,
+        email: data.email,
+        phone: data.mobile,
+        companyName: data.companyName,
+        tradeLicense: data.tradeLicense,
+        role: 'restaurant_owner', // Assign the correct role
+        status: 'pending', // New partners start with a 'pending' status
+      };
+
+      // 4. Send the partner's information to your backend via API
+      // ✅ FIX: Added '/api' prefix to construct the correct URL without changing useAxios hook.
+      await axiosPublic.post("/api/users", partnerInfo);
+      
+      toast.success(`Welcome, ${data.ownerName}! Your partner application has been submitted.`);
+      
+      // ✅ FIX: Navigate to the homepage as requested, not the dashboard.
+      navigate("/");
+
+    } catch (err: any) {
+      // This will now show a more specific error if Firebase fails, or a generic one for other issues.
+      toast.error(err.message || "Something went wrong during registration.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,7 +92,7 @@ const PartnerForm: React.FC = () => {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Two-column grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             {/* Company Name */}
@@ -63,14 +104,12 @@ const PartnerForm: React.FC = () => {
                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                 <input
                   type="text"
-                  name="companyName"
+                  {...register("companyName", { required: "Company name is required" })}
                   placeholder="Your official company name"
-                  value={formData.companyName}
-                  onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#EF451C]"
-                  required
                 />
               </div>
+              {errors.companyName && <p className="text-red-500 text-xs mt-1">{errors.companyName.message}</p>}
             </div>
 
             {/* Owner Name */}
@@ -82,14 +121,12 @@ const PartnerForm: React.FC = () => {
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                 <input
                   type="text"
-                  name="ownerName"
+                  {...register("ownerName", { required: "Owner's name is required" })}
                   placeholder="Full name of the owner"
-                  value={formData.ownerName}
-                  onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#EF451C]"
-                  required
                 />
               </div>
+              {errors.ownerName && <p className="text-red-500 text-xs mt-1">{errors.ownerName.message}</p>}
             </div>
 
             {/* Mobile Number */}
@@ -101,14 +138,12 @@ const PartnerForm: React.FC = () => {
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                 <input
                   type="tel"
-                  name="mobile"
+                  {...register("mobile", { required: "Mobile number is required" })}
                   placeholder="Contact mobile number"
-                  value={formData.mobile}
-                  onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#EF451C]"
-                  required
                 />
               </div>
+               {errors.mobile && <p className="text-red-500 text-xs mt-1">{errors.mobile.message}</p>}
             </div>
 
             {/* Trade License Number */}
@@ -120,14 +155,12 @@ const PartnerForm: React.FC = () => {
                 <ScrollText className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                 <input
                   type="text"
-                  name="tradeLicense"
+                  {...register("tradeLicense", { required: "Trade license is required" })}
                   placeholder="Valid trade license number"
-                  value={formData.tradeLicense}
-                  onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#EF451C]"
-                  required
                 />
               </div>
+              {errors.tradeLicense && <p className="text-red-500 text-xs mt-1">{errors.tradeLicense.message}</p>}
             </div>
             
             {/* Email */}
@@ -139,14 +172,18 @@ const PartnerForm: React.FC = () => {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                 <input
                   type="email"
-                  name="email"
+                  {...register("email", { 
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address"
+                    }
+                  })}
                   placeholder="Your primary email address"
-                  value={formData.email}
-                  onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#EF451C]"
-                  required
                 />
               </div>
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
             </div>
 
             {/* Password */}
@@ -158,12 +195,12 @@ const PartnerForm: React.FC = () => {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                 <input
                   type={showPassword ? "text" : "password"}
-                  name="password"
+                  {...register("password", { 
+                    required: "Password is required",
+                    minLength: { value: 6, message: "Password must be at least 6 characters" }
+                  })}
                   placeholder="Create a strong password"
-                  value={formData.password}
-                  onChange={handleChange}
                   className="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#EF451C]"
-                  required
                 />
                 <button
                   type="button"
@@ -173,6 +210,7 @@ const PartnerForm: React.FC = () => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
             </div>
           </div>
 
@@ -180,9 +218,20 @@ const PartnerForm: React.FC = () => {
           <div className="pt-4">
             <button
               type="submit"
-              className="w-full py-3 bg-[#EF451C] text-white text-lg font-semibold rounded-lg shadow-md hover:bg-opacity-90 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#EF451C]"
+              disabled={loading}
+              className="w-full py-3 bg-[#EF451C] text-white text-lg font-semibold rounded-lg shadow-md hover:bg-opacity-90 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#EF451C] disabled:bg-slate-400 disabled:cursor-not-allowed"
             >
-              Submit Application
+              {loading ? (
+                <div className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Submitting...
+                </div>
+              ) : (
+                "Submit Application"
+              )}
             </button>
           </div>
         </form>
@@ -190,9 +239,9 @@ const PartnerForm: React.FC = () => {
         {/* Already Registered */}
         <p className="mt-8 text-center text-sm text-slate-500">
           Already have a partner account?{" "}
-          <a href="/partner-login" className="font-semibold text-[#EF451C] hover:underline">
+          <Link to="/auth/log-in" className="font-semibold text-[#EF451C] hover:underline">
             Login here
-          </a>
+          </Link>
         </p>
       </div>
     </div>
