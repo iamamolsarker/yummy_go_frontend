@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
-import { GoogleMap, LoadScript, Marker, DirectionsService, DirectionsRenderer } from "@react-google-maps/api";
+import React, { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
+import "leaflet-routing-machine";
 import {
-  Map,
   ServerCrash,
   Navigation,
   Loader2,
@@ -15,6 +18,18 @@ import {
 // Make sure to import hooks from your project's correct path
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+
+// --- Fix for default Leaflet icons ---
+import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
+import iconUrl from "leaflet/dist/images/marker-icon.png";
+import shadowUrl from "leaflet/dist/images/marker-shadow.png";
+
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl,
+  iconUrl,
+  shadowUrl,
+});
 
 // --- Type Definitions ---
 type Delivery = {
@@ -30,18 +45,33 @@ type RiderLocation = {
   lng: number;
 };
 
-// --- Map Styling & Configuration ---
-const containerStyle = {
-  width: '100%',
-  height: '100%',
-  borderRadius: '1rem',
-};
+// --- Routing Machine Component ---
+// This component bridges the gap between Leaflet's routing plugin and React
+const RoutingMachine: React.FC<{ waypoints: L.LatLng[] }> = ({ waypoints }) => {
+  const map = useMap();
 
-const mapOptions = {
-  disableDefaultUI: true,
-  zoomControl: true,
-  mapTypeControl: false,
-  streetViewControl: false,
+  useEffect(() => {
+    if (!map || waypoints.length < 2) return;
+
+    // FIX: Cast 'L' to 'any' to resolve the TypeScript error for the routing plugin
+    const routingControl = (L as any).Routing.control({
+      waypoints,
+      routeWhileDragging: true,
+      show: false, // Hides the instruction panel
+      addWaypoints: false,
+      lineOptions: {
+        styles: [{ color: '#EF451C', opacity: 0.8, weight: 6 }],
+      },
+      createMarker: () => null, // Prevents default markers from the plugin
+    }).addTo(map);
+
+    // Cleanup function to remove the control when component unmounts
+    return () => {
+      map.removeControl(routingControl);
+    };
+  }, [map, waypoints]);
+
+  return null;
 };
 
 // --- Main Component ---
@@ -53,12 +83,7 @@ const RiderRoutes: React.FC = () => {
   const [riderLocation, setRiderLocation] = useState<RiderLocation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [directionsResponse, setDirectionsResponse] = useState<google.maps.DirectionsResult | null>(null);
-  
-  // ✅ FIX: Use import.meta.env for Vite projects instead of process.env
-  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 
-  // --- Data Fetching and Geolocation ---
   useEffect(() => {
     if (authLoading || !user) {
       setIsLoading(authLoading);
@@ -69,13 +94,10 @@ const RiderRoutes: React.FC = () => {
       try {
         const userRes = await axiosSecure.get(`/users/${user.email}`);
         const riderId = userRes.data?.data?._id;
-
         if (riderId) {
           const deliveriesRes = await axiosSecure.get(`/deliveries/rider/${riderId}`);
           const deliveries = deliveriesRes.data?.data || [];
-          const active = deliveries.find(
-            (d: any) => !['delivered', 'cancelled'].includes(d.status)
-          );
+          const active = deliveries.find((d: any) => !['delivered', 'cancelled'].includes(d.status));
           setActiveDelivery(active || null);
         }
       } catch (err) {
@@ -89,10 +111,8 @@ const RiderRoutes: React.FC = () => {
 
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
-        setRiderLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
+        const newLoc = { lat: position.coords.latitude, lng: position.coords.longitude };
+        setRiderLocation(newLoc);
         setIsLoading(false);
       },
       () => {
@@ -105,7 +125,7 @@ const RiderRoutes: React.FC = () => {
     return () => navigator.geolocation.clearWatch(watchId);
   }, [user, authLoading, axiosSecure]);
 
-  const mapCenter = useMemo(() => riderLocation || { lat: 23.8103, lng: 90.4125 }, [riderLocation]);
+  const mapCenter: L.LatLngExpression = riderLocation ? [riderLocation.lat, riderLocation.lng] : [23.8103, 90.4125];
 
   if (isLoading) {
     return (
@@ -125,55 +145,44 @@ const RiderRoutes: React.FC = () => {
       </div>
     );
   }
-  
-  if (!googleMapsApiKey) {
-     return (
-       <div className="flex flex-col justify-center items-center h-full text-center p-4">
-          <Map className="text-red-500 mb-4" size={48} />
-          <h2 className="text-2xl font-bold mb-2">Google Maps API Key Missing</h2>
-          <p className="text-slate-500 max-w-md">Please add your Google Maps API Key to your environment variables (`.env.local`) as `VITE_GOOGLE_MAPS_API_KEY` to display the map.</p>
-       </div>
-    );
-  }
 
   return (
     <div className="h-full w-full relative">
-      <LoadScript googleMapsApiKey={googleMapsApiKey}>
-        <GoogleMap mapContainerStyle={containerStyle} center={mapCenter} zoom={14} options={mapOptions}>
-          {riderLocation && (
-            <Marker
-              position={riderLocation}
-              icon={{
-                path: window.google.maps.SymbolPath.CIRCLE,
-                scale: 8, fillColor: "#4285F4", fillOpacity: 1,
-                strokeColor: "white", strokeWeight: 2,
-              }}
-            />
-          )}
+      <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%', borderRadius: '1rem' }} zoomControl={false}>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
 
-          {activeDelivery && (
-            <>
-              <Marker position={activeDelivery.pickup_address} label={{ text: "P", color: "white" }} />
-              <Marker position={activeDelivery.delivery_address} label={{ text: "D", color: "white" }} />
-              <DirectionsService
-                options={{
-                  destination: activeDelivery.delivery_address,
-                  origin: activeDelivery.pickup_address,
-                  travelMode: google.maps.TravelMode.DRIVING,
-                }}
-                callback={(res) => {
-                  if (res !== null && directionsResponse === null) {
-                    setDirectionsResponse(res);
-                  }
-                }}
-              />
-              {directionsResponse && (
-                <DirectionsRenderer options={{ directions: directionsResponse, suppressMarkers: true }} />
-              )}
-            </>
-          )}
-        </GoogleMap>
-      </LoadScript>
+        {/* Rider's Current Location Marker */}
+        {riderLocation && (
+          <CircleMarker
+            center={[riderLocation.lat, riderLocation.lng]}
+            radius={8}
+            pathOptions={{ color: 'white', fillColor: '#4285F4', fillOpacity: 1, weight: 2 }}
+          >
+            <Popup>Your Current Location</Popup>
+          </CircleMarker>
+        )}
+
+        {/* If there is an active delivery, render markers and route */}
+        {activeDelivery && (
+          <>
+            <Marker position={[activeDelivery.pickup_address.lat, activeDelivery.pickup_address.lng]}>
+              <Popup><b>Pickup:</b> {activeDelivery.pickup_address.address}</Popup>
+            </Marker>
+            <Marker position={[activeDelivery.delivery_address.lat, activeDelivery.delivery_address.lng]}>
+              <Popup><b>Drop-off:</b> {activeDelivery.delivery_address.address}</Popup>
+            </Marker>
+            <RoutingMachine
+              waypoints={[
+                L.latLng(activeDelivery.pickup_address.lat, activeDelivery.pickup_address.lng),
+                L.latLng(activeDelivery.delivery_address.lat, activeDelivery.delivery_address.lng),
+              ]}
+            />
+          </>
+        )}
+      </MapContainer>
 
       <div className="absolute top-4 left-4 right-4 bg-white p-4 rounded-lg shadow-lg max-w-md mx-auto">
         {activeDelivery ? (
@@ -181,8 +190,8 @@ const RiderRoutes: React.FC = () => {
             <p className="font-bold text-slate-800">Active Delivery: #{activeDelivery.order_number}</p>
             <p className="text-sm text-slate-500 mb-2">Status: <span className="font-semibold text-green-600 capitalize">{activeDelivery.status}</span></p>
             <div className="space-y-2 text-sm">
-                <div className="flex items-start gap-2"><UtensilsCrossed size={16} className="text-slate-500 mt-0.5"/> <div><span className="font-semibold">Pickup:</span> {activeDelivery.pickup_address.address}</div></div>
-                <div className="flex items-start gap-2"><Flag size={16} className="text-slate-500 mt-0.5"/> <div><span className="font-semibold">Drop-off:</span> {activeDelivery.delivery_address.address}</div></div>
+              <div className="flex items-start gap-2"><UtensilsCrossed size={16} className="text-slate-500 mt-0.5"/> <div><span className="font-semibold">Pickup:</span> {activeDelivery.pickup_address.address}</div></div>
+              <div className="flex items-start gap-2"><Flag size={16} className="text-slate-500 mt-0.5"/> <div><span className="font-semibold">Drop-off:</span> {activeDelivery.delivery_address.address}</div></div>
             </div>
           </div>
         ) : (
