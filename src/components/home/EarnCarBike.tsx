@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 const EarnCarBike: React.FC = () => {
     return (
         // A slightly off-white background for a modern look
-        <section className="bg-slate-50 py-16 md:py-24 overflow-hidden">
+        <section className="bg-slate-50 py-5 overflow-hidden">
             <div className="container mx-auto px-4 text-center">
                 
                 {/* --- Animated Text Content --- */}
@@ -18,7 +18,7 @@ const EarnCarBike: React.FC = () => {
                     transition={{ duration: 0.6, ease: "easeOut" }}
                 >
                     <h2 className="text-3xl md:text-5xl font-bold text-gray-800 mb-4 leading-tight">
-                        Earn with your <span className="text-red-500">Drone</span>, <span className="text-red-500">car</span>, <span className="text-red-500">bike</span> or <span className="text-red-500">bicycle</span>
+                        Earn with your Drone, Car, Bike or Bicycle
                     </h2>
                     <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-8">
                         Become a captain, rider or foodman on the highest earning platform!
@@ -45,7 +45,7 @@ const EarnCarBike: React.FC = () => {
 
                 {/* --- Animated Illustration Image --- */}
                 <motion.div 
-                    className="mt-16"
+                    className="mt-2"
                     initial={{ opacity: 0, y: 100 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -53,7 +53,7 @@ const EarnCarBike: React.FC = () => {
                 >
                     <img
                         src="/y-go.png"
-                        alt="Delivery partners with car, bike, and bicycle"
+                        alt="Delivery partners with drone, car, bike, and bicycle"
                         className="mx-auto max-w-full h-auto drop-shadow-xl"
                     />
                 </motion.div>
