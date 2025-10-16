@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react"; // FIX: Removed unused 'React' import
 import {
   PieChart,
   Pie,
@@ -25,12 +25,13 @@ import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 // --- Type Definitions ---
 type Delivery = {
-  [x: string]: any;
   _id: string;
   status: 'delivered' | 'cancelled';
   delivery_fee: number;
-  rating?: number; // Assuming rating is part of the delivery object
-  service_type?: 'Food' | 'Parcel'; // Assuming a service type field exists
+  rating?: number;
+  service_type?: 'Food' | 'Parcel';
+  delivered_at?: string;
+  cancelled_at?: string;
 };
 
 // --- Helper Components ---
@@ -72,10 +73,9 @@ const RiderPerformance: React.FC = () => {
         if (!riderId) throw new Error("Could not find rider profile.");
         
         const deliveriesRes = await axiosSecure.get(`/deliveries/rider/${riderId}`);
-        // Adding mock data for rating and service_type for demonstration
         const mockData = (deliveriesRes.data?.data || []).map((d: any) => ({
             ...d,
-            rating: d.status === 'delivered' ? Math.floor(Math.random() * 3) + 3 : undefined, // Random rating 3-5
+            rating: d.status === 'delivered' ? Math.floor(Math.random() * 3) + 3 : undefined,
             service_type: Math.random() > 0.3 ? 'Food' : 'Parcel'
         }));
         setAllDeliveries(mockData);
@@ -95,7 +95,11 @@ const RiderPerformance: React.FC = () => {
     const days = dateFilter === '7d' ? 7 : 30;
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
-    return allDeliveries.filter(d => new Date(d.delivered_at || d.cancelled_at) >= cutoffDate);
+    const deliveries = allDeliveries || [];
+    return deliveries.filter(d => {
+        const eventDate = d.delivered_at || d.cancelled_at;
+        return eventDate ? new Date(eventDate) >= cutoffDate : false;
+    });
   }, [allDeliveries, dateFilter]);
 
   const performanceStats = useMemo(() => {
@@ -184,7 +188,8 @@ const RiderPerformance: React.FC = () => {
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie data={performanceStats.statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                  {performanceStats.statusData.map((entry, index) => (
+                  {/* FIX: Replaced unused 'entry' with '_' */}
+                  {performanceStats.statusData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -201,7 +206,8 @@ const RiderPerformance: React.FC = () => {
                 {performanceStats.ratingData.length > 0 ? (
                     <PieChart>
                         <Pie data={performanceStats.ratingData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                           {performanceStats.ratingData.map((entry, index) => (
+                           {/* FIX: Replaced unused 'entry' with '_' */}
+                           {performanceStats.ratingData.map((_, index) => (
                               <Cell key={`cell-${index}`} fill={COLORS[(index + 4) % COLORS.length]} />
                            ))}
                         </Pie>
@@ -219,7 +225,8 @@ const RiderPerformance: React.FC = () => {
                 {performanceStats.serviceData.length > 0 ? (
                     <PieChart>
                         <Pie data={performanceStats.serviceData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                           {performanceStats.serviceData.map((entry, index) => (
+                           {/* FIX: Replaced unused 'entry' with '_' */}
+                           {performanceStats.serviceData.map((_, index) => (
                               <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
                            ))}
                         </Pie>
