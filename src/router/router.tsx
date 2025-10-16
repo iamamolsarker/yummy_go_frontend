@@ -23,6 +23,7 @@ import RiderHistory from "../Dashboard/Rider/RiderHistory";
 import RiderEarnings from "../Dashboard/Rider/RiderEarnings";
 import RiderRoutes from "../Dashboard/Rider/RiderRoutes";
 import RiderPerformance from "../Dashboard/Rider/RiderPerformance";
+import SettingsPage from "../pages/profilePage/SettingsPage";
 
 
 
@@ -55,6 +56,10 @@ export const router = createBrowserRouter([
       {
         path: "profile/:email",
         element: <ProfilePage />
+      },
+      {
+        path: "settings",
+        element: <SettingsPage />
       },
       {
         path: "restaurants",
