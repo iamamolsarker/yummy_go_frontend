@@ -1,6 +1,3 @@
-// NOTE: This component is completed by Abrar Shazid. 
-// Reach out to me if any problem occurs. 
-// (For development use only, remove before production)
 
 import React from 'react';
 
@@ -10,7 +7,7 @@ import favImg from "../../assets/home/mobile.73da0fee.svg"
 
 const Feature:React.FC = () => {
   return (
-    <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100">
+    <section className="py-5 bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="container mx-auto w-[90%]">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-800 mb-4">Why Choose Us</h2>

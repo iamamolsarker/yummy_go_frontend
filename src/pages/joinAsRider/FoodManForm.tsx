@@ -42,7 +42,7 @@ const FoodManForm: React.FC = () => {
                 {step === 1 && (
                     <>
                         <h2 className="text-[28px] font-bold text-[#363636] mb-6 text-center">
-                            Earn with Your Bike, Car or Cycle
+                            Earn with Your Drone, Bike, Car or Cycle
                         </h2>
                         <form onSubmit={handleNext} className="space-y-5">
                             {/* Vehicle Type */}
@@ -51,6 +51,7 @@ const FoodManForm: React.FC = () => {
                                     Vehicle Type
                                 </label>
                                 <select className="w-full px-4 py-3 border border-[#3636361a] rounded-[10px] focus:ring-2 focus:ring-[#EF451C]">
+                                    <option>Drone</option>
                                     <option>Bike</option>
                                     <option>Car</option>
                                     <option>Cycle</option>
@@ -165,6 +166,9 @@ const FoodManForm: React.FC = () => {
 
                             {/* Services */}
                             <div className="flex flex-wrap gap-4">
+                                <label className="flex items-center gap-2">
+                                    <input type="checkbox" /> Drone Ride
+                                </label>
                                 <label className="flex items-center gap-2">
                                     <input type="checkbox" /> Bike Ride
                                 </label>
