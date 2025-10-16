@@ -9,12 +9,16 @@ import {
   Shield,
   Bell,
   CreditCard,
+  Edit,
+  Eye,
+  EyeOff,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
 
-// Make sure to import hooks from your project's correct path
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import ImageUploadModal from './imageUpload/ImageUploadModal'; 
 
 // --- Reusable Components ---
 const SettingsSidebarItem: React.FC<{ icon: React.ReactNode; label: string; active: boolean; onClick: () => void }> = ({ icon, label, active, onClick }) => (
@@ -30,25 +34,24 @@ const SectionHeader: React.FC<{ title: string; subtitle: string }> = ({ title, s
   </div>
 );
 
-const InfoField: React.FC<{ label: string; value: string | undefined | null }> = ({ label, value }) => (
-    <div className="py-2">
-        <p className="text-xs font-medium text-slate-500">{label}</p>
-        <p className="text-md text-slate-800">{value || "Not set"}</p>
-    </div>
-);
-
-
 // --- Main Component ---
 const SettingsPage: React.FC = () => {
-  // ✅ FIX: Removed 'updatePassword' and 'updateUser' as they are not being used
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, updatePassword, updateUser } = useAuth();
   const axiosSecure = useAxiosSecure();
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("Profile");
   
-  const [userData, setUserData] = useState<any>(null);
+  const [profileData, setProfileData] = useState({ name: "", phone: "" });
+  const [addressData, setAddressData] = useState({ addressLine1: "", city: "", postCode: "" });
+  const [passwordData, setPasswordData] = useState({ newPassword: "", confirmNewPassword: "" });
+  const [passwordVisibility, setPasswordVisibility] = useState({ new: false, confirm: false });
   const [notifications, setNotifications] = useState({ email: true, push: false });
+  
+  const [profileImage, setProfileImage] = useState(user?.photoURL || 'https://i.ibb.co.com/PZjxHVfY/yummy-go-logo.png');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (authLoading || !user) {
@@ -59,10 +62,18 @@ const SettingsPage: React.FC = () => {
       try {
         setIsLoading(true);
         const { data } = await axiosSecure.get(`/users/${user.email}`);
-        setUserData(data.data || data);
+        const userData = data.data || data;
+        
+        setProfileData({ name: userData.name || user.displayName || "", phone: userData.phone || "" });
+        setAddressData({
+          addressLine1: userData.address?.addressLine1 || "",
+          city: userData.address?.city || "",
+          postCode: userData.address?.postCode || "",
+        });
+        setProfileImage(userData.photoURL || user.photoURL || 'https://i.ibb.co/PZjxHVfY/yummy-go-logo.png');
+        
       } catch (err) {
-        // If data fails to load from DB, we can still show basic user info from auth
-        console.error("Failed to load profile data from database.");
+        setError("Failed to load your profile data.");
       } finally {
         setIsLoading(false);
       }
@@ -70,8 +81,68 @@ const SettingsPage: React.FC = () => {
     fetchUserData();
   }, [user, authLoading, axiosSecure]);
 
+  const handleProfileSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await updateUser({ displayName: profileData.name });
+      await axiosSecure.patch(`/users/${user?.email}`, { name: profileData.name, phone: profileData.phone });
+      toast.success("Profile updated successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update profile.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAddressSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await axiosSecure.patch(`/users/${user?.email}`, { address: addressData });
+      toast.success("Address updated successfully!");
+    } catch (err) {
+      toast.error("Failed to update address.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmNewPassword) {
+      toast.error("New passwords do not match.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await updatePassword(passwordData.newPassword);
+      toast.success("Password updated successfully!");
+      setPasswordData({ newPassword: "", confirmNewPassword: "" });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update password.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const handleImageUploadSuccess = async (newUrl: string) => {
+    try {
+        await updateUser({ photoURL: newUrl });
+        await axiosSecure.patch(`/users/${user?.email}`, { photoURL: newUrl });
+        setProfileImage(newUrl);
+        toast.success("Profile picture updated!");
+    } catch (error: any) {
+        toast.error(error.message || "Failed to update profile picture.");
+    }
+    setIsModalOpen(false);
+  };
+
   if (isLoading || authLoading) {
     return <div className="flex justify-center items-center h-full"><Loader2 className="animate-spin text-[#EF451C]" size={48}/></div>;
+  }
+  if (error) {
+    return <div className="flex justify-center items-center h-full text-red-500"><AlertCircle className="mr-2"/> {error}</div>;
   }
 
   return (
@@ -82,11 +153,12 @@ const SettingsPage: React.FC = () => {
           
           <div className="lg:col-span-1 space-y-8">
              <div className="bg-white p-6 rounded-xl shadow-sm text-center border">
-                <img 
-                    src={user?.photoURL || 'https://i.ibb.co/PZjxHVfY/yummy-go-logo.png'} 
-                    alt="Profile" 
-                    className="w-24 h-24 object-cover rounded-full border-4 border-white shadow-md mx-auto mb-4"
-                />
+                <div className="relative w-24 h-24 mx-auto mb-4 group">
+                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover rounded-full border-4 border-white shadow-md"/>
+                    <button onClick={() => setIsModalOpen(true)} className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center rounded-full transition-opacity">
+                        <Edit size={24} className="text-white opacity-0 group-hover:opacity-100"/>
+                    </button>
+                </div>
                 <h2 className="font-bold text-xl text-slate-800">{user?.displayName}</h2>
                 <p className="text-sm text-slate-500 truncate">{user?.email}</p>
              </div>
@@ -103,37 +175,43 @@ const SettingsPage: React.FC = () => {
           <div className="lg:col-span-3">
              <div className="bg-white p-8 rounded-xl shadow-sm border min-h-[500px]">
                 {activeTab === 'Profile' && (
-                    <div>
-                        <SectionHeader title="Profile Information" subtitle="Your personal details."/>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
-                            <InfoField label="Full Name" value={userData?.name || user?.displayName} />
-                            <InfoField label="Phone Number" value={userData?.phone} />
-                            <InfoField label="Email Address" value={userData?.email || user?.email} />
+                    <form onSubmit={handleProfileSave}>
+                        <SectionHeader title="Profile Information" subtitle="Update your personal details here."/>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div><label className="block text-sm font-medium text-slate-600 mb-2">Full Name</label><input type="text" value={profileData.name} onChange={e => setProfileData({...profileData, name: e.target.value})} className="w-full p-2 border rounded-md"/></div>
+                            <div><label className="block text-sm font-medium text-slate-600 mb-2">Phone Number</label><input type="tel" value={profileData.phone} onChange={e => setProfileData({...profileData, phone: e.target.value})} className="w-full p-2 border rounded-md"/></div>
+                            <div><label className="block text-sm font-medium text-slate-400 mb-2">Email Address</label><input type="email" value={user?.email || ''} className="w-full p-2 border rounded-md bg-slate-100 text-slate-500" disabled/></div>
                         </div>
-                    </div>
+                        <div className="mt-8 text-right"><button type="submit" disabled={isSubmitting} className="bg-[#EF451C] text-white font-semibold py-2 px-6 rounded-lg hover:bg-opacity-90 disabled:bg-slate-400">{isSubmitting ? 'Saving...' : 'Save Changes'}</button></div>
+                    </form>
                 )}
                 {activeTab === 'Address' && (
-                     <div>
-                        <SectionHeader title="Address Management" subtitle="Your saved delivery address."/>
-                        <div className="space-y-6 mt-6">
-                           <InfoField label="Address Line 1" value={userData?.address?.addressLine1} />
-                           <InfoField label="City" value={userData?.address?.city} />
-                           <InfoField label="Post Code" value={userData?.address?.postCode} />
+                     <form onSubmit={handleAddressSave}>
+                        <SectionHeader title="Address Management" subtitle="Manage your delivery address."/>
+                        <div className="space-y-4 mt-6">
+                            <div><label className="block text-sm font-medium text-slate-600 mb-2">Address Line 1</label><input type="text" value={addressData.addressLine1} onChange={e => setAddressData({...addressData, addressLine1: e.target.value})} className="w-full p-2 border rounded-md"/></div>
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div><label className="block text-sm font-medium text-slate-600 mb-2">City</label><input type="text" value={addressData.city} onChange={e => setAddressData({...addressData, city: e.target.value})} className="w-full p-2 border rounded-md"/></div>
+                                 <div><label className="block text-sm font-medium text-slate-600 mb-2">Post Code</label><input type="text" value={addressData.postCode} onChange={e => setAddressData({...addressData, postCode: e.target.value})} className="w-full p-2 border rounded-md"/></div>
+                            </div>
                         </div>
-                    </div>
+                        <div className="mt-8 text-right"><button type="submit" disabled={isSubmitting} className="bg-[#EF451C] text-white font-semibold py-2 px-6 rounded-lg hover:bg-opacity-90 disabled:bg-slate-400">{isSubmitting ? 'Saving...' : 'Save Address'}</button></div>
+                    </form>
                 )}
                 {activeTab === 'Security' && (
-                    <div>
-                        <SectionHeader title="Account Security" subtitle="Manage account security settings."/>
-                         <div className="mt-6">
-                            <p className="text-sm text-slate-600">Password changes are handled by your authentication provider. You can reset your password from the login page if needed.</p>
-                         </div>
+                    <form onSubmit={handlePasswordUpdate}>
+                        <SectionHeader title="Account Security" subtitle="Change your password and manage account security."/>
+                         <div className="space-y-4 mt-6 max-w-md">
+                             <div><label className="block text-sm font-medium text-slate-600 mb-2">New Password</label><div className="relative"><input type={passwordVisibility.new ? 'text' : 'password'} value={passwordData.newPassword} onChange={e => setPasswordData({...passwordData, newPassword: e.target.value})} className="w-full p-2 pr-10 border rounded-md"/><button type="button" onClick={() => setPasswordVisibility(p => ({...p, new: !p.new}))} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">{passwordVisibility.new ? <EyeOff/> : <Eye/>}</button></div></div>
+                             <div><label className="block text-sm font-medium text-slate-600 mb-2">Confirm New Password</label><div className="relative"><input type={passwordVisibility.confirm ? 'text' : 'password'} value={passwordData.confirmNewPassword} onChange={e => setPasswordData({...passwordData, confirmNewPassword: e.target.value})} className="w-full p-2 pr-10 border rounded-md"/><button type="button" onClick={() => setPasswordVisibility(p => ({...p, confirm: !p.confirm}))} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">{passwordVisibility.confirm ? <EyeOff/> : <Eye/>}</button></div></div>
+                        </div>
+                         <div className="mt-8 text-right"><button type="submit" disabled={isSubmitting} className="bg-[#EF451C] text-white font-semibold py-2 px-6 rounded-lg hover:bg-opacity-90 disabled:bg-slate-400">{isSubmitting ? 'Updating...' : 'Update Password'}</button></div>
                          <div className="mt-12 pt-6 border-t border-red-200">
                              <h3 className="font-bold text-red-600">Deactivate Account</h3>
                              <p className="text-sm text-slate-500 mt-1">This action is permanent and cannot be undone.</p>
                              <button type="button" onClick={() => toast.info('This feature will be available soon.')} className="mt-4 bg-red-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-red-700 opacity-50 cursor-not-allowed">Deactivate Account</button>
                          </div>
-                    </div>
+                    </form>
                 )}
                 {activeTab === 'Notifications' && (
                     <div>
@@ -159,6 +237,13 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
       </div>
+       <ImageUploadModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+          onUploadSuccess={handleImageUploadSuccess} 
+          title="Update Profile Picture" 
+          imageTypeLabel="Select a new Profile Picture"
+        />
        <style>{`.switch{position:relative;display:inline-block;width:50px;height:28px}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#ccc;transition:.4s}.slider:before{position:absolute;content:"";height:20px;width:20px;left:4px;bottom:4px;background-color:#fff;transition:.4s}input:checked+.slider{background-color:#EF451C}input:focus+.slider{box-shadow:0 0 1px #EF451C}input:checked+.slider:before{transform:translateX(22px)}.slider.round{border-radius:34px}.slider.round:before{border-radius:50%}`}</style>
     </div>
   );
