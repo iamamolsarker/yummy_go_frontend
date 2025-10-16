@@ -6,7 +6,8 @@ import {
   FaLock,
   FaUser,
   FaEye,
-  FaEyeSlash
+  FaEyeSlash,
+  FaUtensils
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router";
 
@@ -33,7 +34,7 @@ const UserReg: React.FC = () => {
   // Password strength checker
   const getPasswordStrength = (password: string) => {
     if (!password) return { strength: 0, label: "" };
-    
+
     let strength = 0;
     const checks = {
       length: password.length >= 6,
@@ -44,10 +45,10 @@ const UserReg: React.FC = () => {
     };
 
     strength = Object.values(checks).filter(Boolean).length;
-    
+
     const labels = ["Very Weak", "Weak", "Fair", "Good", "Strong"];
     const colors = ["text-red-500", "text-orange-500", "text-yellow-500", "text-blue-500", "text-green-500"];
-    
+
     return {
       strength: (strength / 5) * 100,
       label: labels[Math.min(strength - 1, 4)] || "",
@@ -64,7 +65,7 @@ const UserReg: React.FC = () => {
     try {
       // 1️⃣ Create the user
       await createUser(data.email, data.password);
-      
+
       // 2️⃣ Update user profile with name
       if (data.name) {
         await updateUser({ displayName: data.name });
@@ -75,7 +76,7 @@ const UserReg: React.FC = () => {
         name: data.name,
         email: data.email,
       };
-      
+
       try {
         const userRes = await axiosPublic.post("/users", userInfo);
         console.log("User saved to database:", userRes.data);
@@ -100,6 +101,9 @@ const UserReg: React.FC = () => {
     }
   };
 
+  const handleReturnHome = () => {
+    navigate("/")
+  }
 
 
   return (
@@ -107,11 +111,16 @@ const UserReg: React.FC = () => {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div onClick={handleReturnHome} className="bg-gradient-to-r from-orange-500 to-red-500 p-4 rounded-3xl shadow-lg">
+              <FaUtensils className="text-white text-3xl" />
+            </div>
+          </div>
           <h1 className="text-3xl font-extrabold text-gray-900">
-            Create your account 
+            Create your account
           </h1>
           <p className="text-gray-600 mt-1">
-            Join <span className="font-semibold text-orange-600">Yummy Go</span> and start ordering food in minutes 
+            Join <span onClick={handleReturnHome} className="font-semibold text-orange-600">Yummy Go</span> and start ordering food in minutes
           </p>
         </div>
 
@@ -193,7 +202,7 @@ const UserReg: React.FC = () => {
                 </button>
               </div>
               {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
-              
+
               {/* Password Strength Indicator */}
               {password && (
                 <div className="mt-2">
@@ -204,13 +213,12 @@ const UserReg: React.FC = () => {
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div 
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        passwordStrength.strength <= 20 ? 'bg-red-500' :
-                        passwordStrength.strength <= 40 ? 'bg-orange-500' :
-                        passwordStrength.strength <= 60 ? 'bg-yellow-500' :
-                        passwordStrength.strength <= 80 ? 'bg-blue-500' : 'bg-green-500'
-                      }`}
+                    <div
+                      className={`h-1.5 rounded-full transition-all duration-300 ${passwordStrength.strength <= 20 ? 'bg-red-500' :
+                          passwordStrength.strength <= 40 ? 'bg-orange-500' :
+                            passwordStrength.strength <= 60 ? 'bg-yellow-500' :
+                              passwordStrength.strength <= 80 ? 'bg-blue-500' : 'bg-green-500'
+                        }`}
                       style={{ width: `${passwordStrength.strength}%` }}
                     ></div>
                   </div>
