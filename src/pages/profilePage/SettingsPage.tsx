@@ -10,7 +10,6 @@ import {
   Bell,
   CreditCard,
   Loader2,
-  AlertCircle,
 } from "lucide-react";
 
 // Make sure to import hooks from your project's correct path
