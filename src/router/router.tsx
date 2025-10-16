@@ -18,6 +18,7 @@ import Restaurants from "../pages/Restaurants/Restaurants";
 import RiderManagement from "../Dashboard/Admin/Riders/RidersManagement";
 import OrdersManagement from "../Dashboard/Admin/Orders/OrdersManagement";
 import RestaurantManagement from "../Dashboard/Admin/Restaurants/RestaurantManagement";
+import RiderOrders from "../Dashboard/Rider/RiderOrders";
 
 
 
@@ -85,7 +86,11 @@ export const router = createBrowserRouter([
       {
         path: "admin/restaurants",
         element: <RestaurantManagement />
-      }
+      },
+      {
+        path: "rider/orders",
+        element: <RiderOrders />
+      },
 
     ]
   },

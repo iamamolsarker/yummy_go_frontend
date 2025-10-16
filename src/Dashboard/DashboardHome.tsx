@@ -16,6 +16,7 @@ const DashboardHome: React.FC = () => {
             <RiderHome />
         </>
     }
+    
     else if (isRestaurantOwner) {
         return <>
             <RestaurantOwnerHome />
