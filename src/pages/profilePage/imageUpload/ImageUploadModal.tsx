@@ -23,7 +23,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
     const [uploadError, setUploadError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_UPLOAD_API; // Make sure this is in .env
+    const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_UPLOAD_API; 
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {

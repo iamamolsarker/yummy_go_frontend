@@ -14,10 +14,16 @@ import Login from "../Authentication/Login";
 import PrivateRoute from "../routes/PrivateRoute";
 import DashboardHome from "../Dashboard/DashboardHome";
 import UserManagement from "../Dashboard/Admin/userManegement/UserManagement";
-import Restaurants from "../pages/Restaurants/Restaurants";
 import RiderManagement from "../Dashboard/Admin/Riders/RidersManagement";
 import OrdersManagement from "../Dashboard/Admin/Orders/OrdersManagement";
 import RestaurantManagement from "../Dashboard/Admin/Restaurants/RestaurantManagement";
+import RiderOrders from "../Dashboard/Rider/RiderOrders";
+import Restaurants from "../pages/restaurants/Restaurants";
+import RiderHistory from "../Dashboard/Rider/RiderHistory";
+import RiderEarnings from "../Dashboard/Rider/RiderEarnings";
+import RiderRoutes from "../Dashboard/Rider/RiderRoutes";
+import RiderPerformance from "../Dashboard/Rider/RiderPerformance";
+import SettingsPage from "../pages/profilePage/SettingsPage";
 
 
 
@@ -50,6 +56,10 @@ export const router = createBrowserRouter([
       {
         path: "profile/:email",
         element: <ProfilePage />
+      },
+      {
+        path: "settings",
+        element: <SettingsPage />
       },
       {
         path: "restaurants",
@@ -85,7 +95,27 @@ export const router = createBrowserRouter([
       {
         path: "admin/restaurants",
         element: <RestaurantManagement />
-      }
+      },
+      {
+        path: "rider/orders",
+        element: <RiderOrders />
+      },
+      {
+        path: "rider/history",
+        element: <RiderHistory />
+      },
+      {
+        path: "rider/earnings",
+        element: <RiderEarnings />
+      },
+      {
+        path: "rider/routes",
+        element: <RiderRoutes />
+      },
+      {
+        path: "rider/performance",
+        element: <RiderPerformance />
+      },
 
     ]
   },
