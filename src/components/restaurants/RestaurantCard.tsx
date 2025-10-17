@@ -52,10 +52,10 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
             </div>
           )}
 
-          {/* Badge for foodpanda */}
+          {/* Badge for featured restaurants */}
           {restaurant.featured && (
             <div className="absolute top-3 left-3 bg-primary text-white px-3 py-1 rounded-md text-xs font-semibold">
-              FOODI
+              YUMMYGO
             </div>
           )}
         </div>
