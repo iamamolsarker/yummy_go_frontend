@@ -284,10 +284,12 @@ const RestaurantFilters: React.FC<RestaurantFiltersProps> = ({ filters, onFilter
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
           <button
             onClick={clearAllFilters}
-            className="w-full py-3 px-4 bg-white border-2 border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition-all font-semibold flex items-center justify-center gap-2 group"
+            className="w-full py-3 px-4 bg-white border-2 border-primary text-primary rounded-lg hover:bg-primary transition-all font-semibold flex items-center justify-center gap-2 group"
           >
             <RotateCcw size={18} className="group-hover:rotate-180 transition-transform duration-300" />
-            Clear All Filters ({activeFilterCount})
+            <span className="group-hover:text-white transition-colors">
+              Clear All Filters ({activeFilterCount})
+            </span>
           </button>
         </div>
       )}
