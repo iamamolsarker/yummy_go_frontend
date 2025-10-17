@@ -1,5 +1,4 @@
 // src/layouts/DashboardLayout.tsx
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
 import {
@@ -15,7 +14,6 @@ import {
   LogOut,
   Menu,
   X,
-  User as UserIcon,
   Package,
   MapPin,
   Star,
