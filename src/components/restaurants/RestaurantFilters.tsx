@@ -162,7 +162,7 @@ const RestaurantFilters: React.FC<RestaurantFiltersProps> = ({ filters, onFilter
                   key={meal}
                   className={`flex items-center justify-center cursor-pointer px-3 py-2.5 rounded-lg border-2 transition-all text-sm font-medium ${
                     isSelected
-                      ? 'bg-primary/10 border-primary shadow-sm'
+                      ? 'bg-primary/10 border-[#ef451c] shadow-sm'
                       : 'bg-white border-gray-200 hover:border-primary/30 hover:bg-primary/5'
                   }`}
                 >
@@ -172,7 +172,7 @@ const RestaurantFilters: React.FC<RestaurantFiltersProps> = ({ filters, onFilter
                     onChange={() => handleMealTypeChange(meal)}
                     className="sr-only"
                   />
-                  <span className={`truncate ${isSelected ? 'text-primary font-semibold' : 'text-gray-700'}`}>
+                  <span className={`truncate ${isSelected ? 'text-[#ef451c] font-semibold' : 'text-gray-700'}`}>
                     {meal}
                   </span>
                 </label>
@@ -286,10 +286,10 @@ const RestaurantFilters: React.FC<RestaurantFiltersProps> = ({ filters, onFilter
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
           <button
             onClick={clearAllFilters}
-            className="w-full py-3 px-4 bg-white border-2 border-primary text-primary rounded-lg hover:bg-primary transition-all font-semibold flex items-center justify-center gap-2 group"
+            className="w-full py-3 px-4 bg-white border-2 border-gray-300 text-gray-600 rounded-lg hover:border-primary hover:text-primary transition-all font-semibold flex items-center justify-center gap-2 group"
           >
             <RotateCcw size={18} className="group-hover:rotate-180 transition-transform duration-300" />
-            <span className="group-hover:text-white transition-colors">
+            <span>
               Clear All Filters ({activeFilterCount})
             </span>
           </button>
