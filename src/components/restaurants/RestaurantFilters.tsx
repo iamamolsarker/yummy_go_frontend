@@ -286,7 +286,7 @@ const RestaurantFilters: React.FC<RestaurantFiltersProps> = ({ filters, onFilter
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
           <button
             onClick={clearAllFilters}
-            className="w-full py-3 px-4 bg-white border-2 border-gray-300 text-gray-600 rounded-lg hover:border-primary hover:text-primary transition-all font-semibold flex items-center justify-center gap-2 group"
+            className="w-full py-3 px-4 bg-white border-2 border-gray-300 text-gray-600 rounded-lg hover:border-[#ef451c] hover:text-[#ef451c] transition-all font-semibold flex items-center justify-center gap-2 group"
           >
             <RotateCcw size={18} className="group-hover:rotate-180 transition-transform duration-300" />
             <span>
