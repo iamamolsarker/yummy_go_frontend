@@ -173,9 +173,18 @@ export default function Restaurants() {
                                 <div className="text-center py-12">
                                     <div className="text-6xl mb-4">🍽️</div>
                                     <h3 className="text-2xl font-bold text-dark-title mb-2">No restaurants found</h3>
-                                    <p className="text-gray-text">
-                                        Try adjusting your filters or search query
+                                    <p className="text-gray-text mb-4">
+                                        {restaurants.length === 0 
+                                            ? 'No restaurants available in the database yet. Please add some restaurants from the admin panel.'
+                                            : 'Try adjusting your filters or search query'}
                                     </p>
+                                    {restaurants.length === 0 && (
+                                        <div className="mt-4 p-4 bg-blue-50 rounded-lg max-w-md mx-auto">
+                                            <p className="text-sm text-blue-800">
+                                                💡 <strong>Tip:</strong> Check browser console (F12) for API response details
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </section>

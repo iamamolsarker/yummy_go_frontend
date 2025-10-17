@@ -32,10 +32,30 @@ const useRestaurants = (options?: UseRestaurantsOptions) => {
         console.log('Fetching restaurants from:', fullUrl);
         const response = await axios.get(fullUrl);
         console.log('Restaurant response:', response.data);
+        console.log('Response.data type:', typeof response.data);
+        console.log('Response.data.data:', response.data?.data);
+        console.log('Is array?:', Array.isArray(response.data));
+        console.log('Is data.data array?:', Array.isArray(response.data?.data));
         
         // Backend response structure check kore data return korbo
-        // Response structure: { success: true, data: [...] } or { data: [...] }
-        const restaurants = response.data?.data || response.data || [];
+        // Response structure: { success: true, data: [...] } or { data: [...] } or [...]
+        let restaurants = [];
+        
+        if (Array.isArray(response.data)) {
+          // Direct array response
+          restaurants = response.data;
+          console.log('Using direct array, length:', restaurants.length);
+        } else if (Array.isArray(response.data?.data)) {
+          // Nested data structure
+          restaurants = response.data.data;
+          console.log('Using nested data, length:', restaurants.length);
+        } else if (response.data) {
+          // Fallback to response.data
+          restaurants = Array.isArray(response.data) ? response.data : [];
+          console.log('Fallback, length:', restaurants.length);
+        }
+        
+        console.log('Final restaurants count:', restaurants.length);
         return restaurants as Restaurant[];
       } catch (error) {
         console.error('Error fetching restaurants:', error);
