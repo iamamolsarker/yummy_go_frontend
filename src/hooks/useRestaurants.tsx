@@ -29,8 +29,14 @@ const useRestaurants = (options?: UseRestaurantsOptions) => {
         const queryString = params.toString();
         const fullUrl = queryString ? `${url}?${queryString}` : url;
 
+        console.log('Fetching restaurants from:', fullUrl);
         const response = await axios.get(fullUrl);
-        return response.data.data as Restaurant[];
+        console.log('Restaurant response:', response.data);
+        
+        // Backend response structure check kore data return korbo
+        // Response structure: { success: true, data: [...] } or { data: [...] }
+        const restaurants = response.data?.data || response.data || [];
+        return restaurants as Restaurant[];
       } catch (error) {
         console.error('Error fetching restaurants:', error);
         throw error;

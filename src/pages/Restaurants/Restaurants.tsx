@@ -22,7 +22,7 @@ export default function Restaurants() {
     // Fetch restaurants with TanStack Query
     const { data: restaurants = [], isLoading, error } = useRestaurants({
         search: searchQuery,
-        status: 'active',
+        // status: 'active', // Status filter remove kore shob restaurant dekhabo
     });
 
     // Filter and sort restaurants based on filters
