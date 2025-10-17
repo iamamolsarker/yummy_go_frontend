@@ -18,12 +18,12 @@ import RiderManagement from "../Dashboard/Admin/Riders/RidersManagement";
 import OrdersManagement from "../Dashboard/Admin/Orders/OrdersManagement";
 import RestaurantManagement from "../Dashboard/Admin/Restaurants/RestaurantManagement";
 import RiderOrders from "../Dashboard/Rider/RiderOrders";
-import Restaurants from "../pages/restaurants/Restaurants";
 import RiderHistory from "../Dashboard/Rider/RiderHistory";
 import RiderEarnings from "../Dashboard/Rider/RiderEarnings";
 import RiderRoutes from "../Dashboard/Rider/RiderRoutes";
 import RiderPerformance from "../Dashboard/Rider/RiderPerformance";
 import SettingsPage from "../pages/profilePage/SettingsPage";
+import Restaurants from "../pages/Restaurants/Restaurants";
 
 
 
