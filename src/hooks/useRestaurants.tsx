@@ -14,16 +14,16 @@ const useRestaurants = (options?: UseRestaurantsOptions) => {
     queryKey: ['restaurants', options],
     queryFn: async () => {
       try {
-        let url = '/restaurants';
+        let url = 'api/restaurants';
         const params = new URLSearchParams();
 
         if (options?.search) {
           params.append('search', options.search);
-          url = '/restaurants/search';
+          url = 'api/restaurants/search';
         }
 
         if (options?.status) {
-          url = `/restaurants/status/${options.status}`;
+          url = `api/restaurants/status/${options.status}`;
         }
 
         const queryString = params.toString();
