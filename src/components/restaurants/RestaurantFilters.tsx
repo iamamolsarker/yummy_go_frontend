@@ -162,7 +162,7 @@ const RestaurantFilters: React.FC<RestaurantFiltersProps> = ({ filters, onFilter
                   key={meal}
                   className={`flex items-center justify-center cursor-pointer px-3 py-2.5 rounded-lg border-2 transition-all text-sm font-medium ${
                     isSelected
-                      ? 'bg-primary border-primary shadow-sm'
+                      ? 'bg-primary/10 border-primary shadow-sm'
                       : 'bg-white border-gray-200 hover:border-primary/30 hover:bg-primary/5'
                   }`}
                 >
@@ -172,7 +172,7 @@ const RestaurantFilters: React.FC<RestaurantFiltersProps> = ({ filters, onFilter
                     onChange={() => handleMealTypeChange(meal)}
                     className="sr-only"
                   />
-                  <span className={`truncate ${isSelected ? 'text-white' : 'text-gray-700'}`}>
+                  <span className={`truncate ${isSelected ? 'text-primary font-semibold' : 'text-gray-700'}`}>
                     {meal}
                   </span>
                 </label>
