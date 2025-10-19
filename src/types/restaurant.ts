@@ -45,17 +45,27 @@ export interface MenuItem {
   name: string;
   description?: string;
   category: string;
+  // backend sometimes returns numbers as raw numbers; parse upstream as needed
   price: number;
-  image_url?: string;
+  image?: string | null;
+  ingredients?: string[];
+  allergens?: string[];
+  nutrition?: {
+    calories?: number | null;
+    protein?: number | null;
+    carbs?: number | null;
+    fat?: number | null;
+  } | null;
+  is_vegetarian?: boolean;
+  is_vegan?: boolean;
+  is_halal?: boolean;
   is_available: boolean;
   is_featured?: boolean;
-  dietary_info?: string[];
-  ingredients?: string[];
+  preparation_time?: string;
   rating: number;
-  total_ratings: number;
-  preparation_time?: number;
-  created_at: string;
-  updated_at: string;
+  total_reviews?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Filter Types

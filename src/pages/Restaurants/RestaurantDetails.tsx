@@ -15,6 +15,7 @@ import {
   Minus,
   X
 } from 'lucide-react';
+import { FaLeaf, FaCarrot, FaCheckCircle, FaInfoCircle, FaUtensils } from 'react-icons/fa';
 import useAxios from '../../hooks/useAxios';
 import type { Restaurant, MenuItem } from '../../types/restaurant';
 
@@ -50,7 +51,7 @@ const RestaurantDetails: React.FC = () => {
     queryKey: ['menu', id],
     queryFn: async () => {
       try {
-        const response = await axios.get(`/api/restaurants/${id}/menu`);
+        const response = await axios.get(`/api/restaurants/${id}/menus`);
         return response.data.data || [];
       } catch {
         console.warn('Menu endpoint not available, using empty menu');
@@ -304,13 +305,21 @@ const RestaurantDetails: React.FC = () => {
                     >
                       <div className="p-4 flex gap-4">
                         {/* Item Image */}
-                        {item.image_url && (
+                        {item.image ? (
                           <div className="flex-shrink-0">
                             <img
-                              src={item.image_url}
+                              src={item.image}
                               alt={item.name}
                               className="w-32 h-32 object-cover rounded-lg"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
                             />
+                          </div>
+                        ) : (
+                          <div className="flex-shrink-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-orange-50 rounded-lg flex items-center justify-center">
+                            <FaUtensils className="text-4xl text-gray-400" />
                           </div>
                         )}
 
@@ -318,37 +327,112 @@ const RestaurantDetails: React.FC = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex-1">
-                              <h3 className="text-lg font-bold text-dark-title mb-1">
-                                {item.name}
-                              </h3>
+                              {/* Title with badges */}
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-lg font-bold text-dark-title">
+                                  {item.name}
+                                </h3>
+                                {item.is_featured && (
+                                  <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded">
+                                    Featured
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Description */}
                               {item.description && (
                                 <p className="text-sm text-gray-600 mb-2 line-clamp-2">
                                   {item.description}
                                 </p>
                               )}
-                              {item.dietary_info && item.dietary_info.length > 0 && (
-                                <div className="flex gap-1 mb-2">
-                                  {item.dietary_info.map((diet, idx) => (
+
+                              {/* Diet badges */}
+                              <div className="flex flex-wrap gap-1 mb-2">
+                                {item.is_vegetarian && (
+                                  <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium flex items-center gap-1">
+                                    <FaLeaf className="text-sm" />
+                                    <span>Vegetarian</span>
+                                  </span>
+                                )}
+                                {item.is_vegan && (
+                                  <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium flex items-center gap-1">
+                                    <FaCarrot className="text-sm" />
+                                    <span>Vegan</span>
+                                  </span>
+                                )}
+                                {item.is_halal && (
+                                  <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium flex items-center gap-1">
+                                    <FaCheckCircle className="text-sm" />
+                                    <span>Halal</span>
+                                  </span>
+                                )}
+                                {Array.isArray(item.ingredients) && item.ingredients.length > 0 && (
+                                  item.ingredients.map((ing, idx) => (
                                     <span
                                       key={idx}
-                                      className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full"
+                                      className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full font-medium"
                                     >
-                                      {diet}
+                                      {ing}
                                     </span>
-                                  ))}
-                                </div>
+                                  ))
+                                )}
+                              </div>
+
+                              {/* Ingredients */}
+                              {item.ingredients && item.ingredients.length > 0 && (
+                                <p className="text-xs text-gray-500 mb-2">
+                                  <span className="font-semibold">Ingredients:</span> {item.ingredients.join(', ')}
+                                </p>
                               )}
-                              <div className="flex items-center gap-3">
+
+                              {/* Allergens */}
+                              {item.allergens && item.allergens.length > 0 && (
+                                <p className="text-xs text-red-600 mb-2 flex items-center gap-2">
+                                  <FaInfoCircle className="text-red-500" />
+                                  <span className="font-semibold">Allergens:</span>
+                                  <span className="ml-1">{item.allergens.join(', ')}</span>
+                                </p>
+                              )}
+
+                              {/* Price, Rating, and Prep Time */}
+                              <div className="flex items-center gap-4 flex-wrap">
                                 <span className="text-xl font-bold text-primary">
                                   ৳{item.price}
                                 </span>
+                                
                                 {item.rating > 0 && (
                                   <div className="flex items-center gap-1 text-sm">
                                     <Star size={14} className="text-yellow-500 fill-yellow-500" />
                                     <span className="font-semibold">{item.rating.toFixed(1)}</span>
+                                    <span className="text-gray-500">({item.total_reviews || 0})</span>
+                                  </div>
+                                )}
+
+                                {item.preparation_time && (
+                                  <div className="flex items-center gap-1 text-sm text-gray-600">
+                                    <Clock size={14} />
+                                    <span>{item.preparation_time}</span>
                                   </div>
                                 )}
                               </div>
+
+                              {/* Nutrition info if available */}
+                              {item.nutrition && (
+                                <div className="mt-2 flex gap-3 text-xs text-gray-600 items-center">
+                                  {item.nutrition.calories != null && (
+                                    <span className="flex items-center gap-1"><FaInfoCircle className="text-red-500" />{item.nutrition.calories} cal</span>
+                                  )}
+                                  {item.nutrition.protein != null && (
+                                    <span className="flex items-center gap-1"><FaInfoCircle className="text-green-500" />{item.nutrition.protein}g protein</span>
+                                  )}
+                                  {item.nutrition.carbs != null && (
+                                    <span className="flex items-center gap-1"><FaInfoCircle className="text-yellow-500" />{item.nutrition.carbs}g carbs</span>
+                                  )}
+                                  {item.nutrition.fat != null && (
+                                    <span className="flex items-center gap-1"><FaInfoCircle className="text-orange-500" />{item.nutrition.fat}g fat</span>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
 
@@ -520,9 +604,9 @@ const RestaurantDetails: React.FC = () => {
                     key={item._id}
                     className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg"
                   >
-                    {item.image_url && (
+                    {item.image && (
                       <img
-                        src={item.image_url}
+                        src={item.image}
                         alt={item.name}
                         className="w-20 h-20 object-cover rounded-lg"
                       />
