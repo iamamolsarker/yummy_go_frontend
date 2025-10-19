@@ -24,6 +24,7 @@ import RiderRoutes from "../Dashboard/Rider/RiderRoutes";
 import RiderPerformance from "../Dashboard/Rider/RiderPerformance";
 import SettingsPage from "../pages/profilePage/SettingsPage";
 import Restaurants from "../pages/Restaurants/Restaurants";
+import RestaurantDetails from "../pages/Restaurants/RestaurantDetails";
 
 
 
@@ -64,6 +65,10 @@ export const router = createBrowserRouter([
       {
         path: "restaurants",
         element: <Restaurants />
+      },
+      {
+        path: "restaurants/:id",
+        element: <RestaurantDetails />
       },
 
     ]
