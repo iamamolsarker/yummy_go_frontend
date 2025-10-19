@@ -8,10 +8,18 @@ interface RestaurantCardProps {
 }
 
 const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
-  const isTemporarilyUnavailable = !restaurant.is_open || restaurant.status !== 'active';
+  const isTemporarilyUnavailable = 
+    (restaurant.is_open === false) || 
+    (restaurant.is_active === false) || 
+    (restaurant.status && restaurant.status !== 'active');
   
   // Format delivery time
-  const deliveryTime = `${restaurant.delivery_time.min} - ${restaurant.delivery_time.max} min`;
+  const deliveryTime = restaurant.delivery_time 
+    ? `${restaurant.delivery_time.min} - ${restaurant.delivery_time.max} min`
+    : '20 - 35 min';
+  
+  // Get cuisine types
+  const cuisineDisplay = (restaurant.cuisine || restaurant.cuisine_types)?.join(', ') || 'Restaurant';
   
   // Get opening time for closed restaurants
   const getOpeningTime = () => {
@@ -30,12 +38,22 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
 
       {/* Restaurant Image */}
       <Link to={`/restaurants/${restaurant._id}`}>
-        <div className="relative h-48 overflow-hidden">
-          <img
-            src={restaurant.banner_url || restaurant.logo_url || 'https://via.placeholder.com/400x300?text=Restaurant'}
-            alt={restaurant.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+        <div className="relative h-48 overflow-hidden bg-gray-200">
+          {(restaurant.banner_url || restaurant.logo_url) ? (
+            <img
+              src={restaurant.banner_url || restaurant.logo_url}
+              alt={restaurant.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-primary/10 to-orange-50 flex items-center justify-center">
+              <span className="text-2xl font-bold text-gray-300">{restaurant.name}</span>
+            </div>
+          )}
           
           {/* Overlay for closed/unavailable restaurants */}
           {isTemporarilyUnavailable && (
@@ -67,7 +85,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
           </h3>
           
           <p className="text-sm text-gray-text mb-3 truncate">
-            {restaurant.cuisine_types.join(', ')}
+            {cuisineDisplay}
           </p>
 
           {/* Rating and Delivery Time */}
@@ -75,10 +93,10 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
             <div className="flex items-center gap-1">
               <Star size={16} className="text-yellow-500 fill-yellow-500" />
               <span className="font-semibold text-dark-title">
-                {restaurant.rating.toFixed(1)}
+                {restaurant.rating?.toFixed(1) || '0.0'}
               </span>
               <span className="text-gray-text">
-                ({restaurant.total_ratings})
+                ({restaurant.total_reviews || restaurant.total_ratings || 0})
               </span>
             </div>
 
@@ -89,12 +107,14 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
           </div>
 
           {/* Delivery Fee */}
-          <div className="mt-3 pt-3 border-t border-gray-100 text-sm text-gray-text">
-            Delivery Fee: <span className="font-semibold text-dark-title">৳{restaurant.delivery_fee}</span>
-            {restaurant.minimum_order && (
-              <span className="ml-2">• Min order: ৳{restaurant.minimum_order}</span>
-            )}
-          </div>
+          {restaurant.delivery_fee !== undefined && (
+            <div className="mt-3 pt-3 border-t border-gray-100 text-sm text-gray-text">
+              Delivery Fee: <span className="font-semibold text-dark-title">৳{restaurant.delivery_fee}</span>
+              {restaurant.minimum_order && (
+                <span className="ml-2">• Min order: ৳{restaurant.minimum_order}</span>
+              )}
+            </div>
+          )}
         </div>
       </Link>
     </div>
