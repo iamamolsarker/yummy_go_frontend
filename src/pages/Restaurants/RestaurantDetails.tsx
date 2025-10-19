@@ -195,21 +195,21 @@ const RestaurantDetails: React.FC = () => {
               <div>
                 <h1 className="text-4xl font-bold mb-2">{restaurant.name}</h1>
                 <p className="text-lg text-gray-200 mb-3">
-                  {restaurant.cuisine_types.join(' • ')}
+                  {restaurant.cuisine_types?.join(' • ') || 'Restaurant'}
                 </p>
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-1">
                     <Star size={18} className="fill-yellow-400 text-yellow-400" />
-                    <span className="font-semibold">{restaurant.rating.toFixed(1)}</span>
-                    <span className="text-gray-300">({restaurant.total_ratings})</span>
+                    <span className="font-semibold">{restaurant.rating?.toFixed(1) || '0.0'}</span>
+                    <span className="text-gray-300">({restaurant.total_ratings || 0})</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock size={18} />
-                    <span>{restaurant.delivery_time.min}-{restaurant.delivery_time.max} min</span>
+                    <span>{restaurant.delivery_time?.min || 0}-{restaurant.delivery_time?.max || 0} min</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <MapPin size={18} />
-                    <span>{restaurant.address.area}, {restaurant.address.city}</span>
+                    <span>{restaurant.address?.area || ''}, {restaurant.address?.city || ''}</span>
                   </div>
                 </div>
               </div>
@@ -395,9 +395,9 @@ const RestaurantDetails: React.FC = () => {
                     <div>
                       <p className="font-semibold text-gray-800 mb-1">Address</p>
                       <p className="text-sm text-gray-600">
-                        {restaurant.address.street}, {restaurant.address.area}<br />
-                        {restaurant.address.city}
-                        {restaurant.address.postal_code && ` - ${restaurant.address.postal_code}`}
+                        {restaurant.address?.street || ''}, {restaurant.address?.area || ''}<br />
+                        {restaurant.address?.city || ''}
+                        {restaurant.address?.postal_code && ` - ${restaurant.address.postal_code}`}
                       </p>
                     </div>
                   </div>
@@ -408,10 +408,10 @@ const RestaurantDetails: React.FC = () => {
                     <div>
                       <p className="font-semibold text-gray-800 mb-1">Phone</p>
                       <a
-                        href={`tel:${restaurant.phone}`}
+                        href={`tel:${restaurant.phone || ''}`}
                         className="text-sm text-primary hover:underline"
                       >
-                        {restaurant.phone}
+                        {restaurant.phone || 'N/A'}
                       </a>
                     </div>
                   </div>
@@ -420,7 +420,7 @@ const RestaurantDetails: React.FC = () => {
                   <div className="pt-4 border-t border-gray-200">
                     <div className="flex justify-between mb-2">
                       <span className="text-sm text-gray-600">Delivery Fee</span>
-                      <span className="font-semibold text-gray-800">৳{restaurant.delivery_fee}</span>
+                      <span className="font-semibold text-gray-800">৳{restaurant.delivery_fee || 0}</span>
                     </div>
                     {restaurant.minimum_order && (
                       <div className="flex justify-between mb-2">
@@ -431,7 +431,7 @@ const RestaurantDetails: React.FC = () => {
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Delivery Time</span>
                       <span className="font-semibold text-gray-800">
-                        {restaurant.delivery_time.min}-{restaurant.delivery_time.max} min
+                        {restaurant.delivery_time?.min || 0}-{restaurant.delivery_time?.max || 0} min
                       </span>
                     </div>
                   </div>
