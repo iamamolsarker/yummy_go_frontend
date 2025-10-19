@@ -34,7 +34,7 @@ export default function Restaurants() {
             filtered = filtered.filter(
                 (r) =>
                     r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    r.cuisine_types.some((c) => c.toLowerCase().includes(searchQuery.toLowerCase()))
+                    (r.cuisine || r.cuisine_types)?.some((c) => c.toLowerCase().includes(searchQuery.toLowerCase()))
             );
         }
 
@@ -44,13 +44,14 @@ export default function Restaurants() {
                 ? [selectedCuisine, ...filters.cuisines]
                 : filters.cuisines;
             filtered = filtered.filter((r) =>
-                r.cuisine_types.some((c) => cuisinesToFilter.includes(c))
+                (r.cuisine || r.cuisine_types)?.some((c) => cuisinesToFilter.includes(c))
             );
         }
 
         // Apply price range filter (based on delivery fee)
         filtered = filtered.filter(
             (r) =>
+                r.delivery_fee !== undefined &&
                 r.delivery_fee >= filters.priceRange[0] &&
                 r.delivery_fee <= filters.priceRange[1]
         );
@@ -58,6 +59,7 @@ export default function Restaurants() {
         // Apply delivery time filter
         filtered = filtered.filter(
             (r) =>
+                r.delivery_time &&
                 r.delivery_time.max >= filters.deliveryTime[0] &&
                 r.delivery_time.min <= filters.deliveryTime[1]
         );
@@ -65,10 +67,10 @@ export default function Restaurants() {
         // Apply sorting
         switch (filters.sortBy) {
             case 'top_reviewed':
-                filtered.sort((a, b) => b.rating - a.rating);
+                filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
                 break;
             case 'top_selling':
-                filtered.sort((a, b) => b.total_ratings - a.total_ratings);
+                filtered.sort((a, b) => (b.total_reviews || b.total_ratings || 0) - (a.total_reviews || a.total_ratings || 0));
                 break;
             case 'distance':
                 // Would need geolocation to implement properly
