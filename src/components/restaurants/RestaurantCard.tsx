@@ -30,12 +30,22 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
 
       {/* Restaurant Image */}
       <Link to={`/restaurants/${restaurant._id}`}>
-        <div className="relative h-48 overflow-hidden">
-          <img
-            src={restaurant.banner_url || restaurant.logo_url || 'https://via.placeholder.com/400x300?text=Restaurant'}
-            alt={restaurant.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+        <div className="relative h-48 overflow-hidden bg-gray-200">
+          {(restaurant.banner_url || restaurant.logo_url) ? (
+            <img
+              src={restaurant.banner_url || restaurant.logo_url}
+              alt={restaurant.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-primary/10 to-orange-50 flex items-center justify-center">
+              <span className="text-2xl font-bold text-gray-300">{restaurant.name}</span>
+            </div>
+          )}
           
           {/* Overlay for closed/unavailable restaurants */}
           {isTemporarilyUnavailable && (

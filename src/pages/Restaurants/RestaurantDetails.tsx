@@ -45,14 +45,20 @@ const RestaurantDetails: React.FC = () => {
     enabled: !!id,
   });
 
-  // Fetch Menu Items
+  // Fetch Menu Items - Disabled for now as endpoint may not be ready
   const { data: menuItems = [], isLoading: menuLoading } = useQuery<MenuItem[]>({
     queryKey: ['menu', id],
     queryFn: async () => {
-      const response = await axios.get(`/api/restaurants/${id}/menu`);
-      return response.data.data || [];
+      try {
+        const response = await axios.get(`/api/restaurants/${id}/menu`);
+        return response.data.data || [];
+      } catch {
+        console.warn('Menu endpoint not available, using empty menu');
+        return [];
+      }
     },
     enabled: !!id,
+    retry: false, // Don't retry on 404
   });
 
   // Get unique categories
@@ -164,12 +170,22 @@ const RestaurantDetails: React.FC = () => {
       </div>
 
       {/* Restaurant Banner */}
-      <div className="relative h-80 overflow-hidden">
-        <img
-          src={restaurant.banner_url || restaurant.logo_url || 'https://via.placeholder.com/1200x400?text=Restaurant'}
-          alt={restaurant.name}
-          className="w-full h-full object-cover"
-        />
+      <div className="relative h-80 overflow-hidden bg-gray-200">
+        {(restaurant.banner_url || restaurant.logo_url) ? (
+          <img
+            src={restaurant.banner_url || restaurant.logo_url}
+            alt={restaurant.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-orange-100 flex items-center justify-center">
+            <span className="text-4xl font-bold text-gray-400">{restaurant.name}</span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
         
         {/* Action Buttons on Banner */}
