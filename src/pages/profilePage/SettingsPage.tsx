@@ -36,7 +36,7 @@ const SectionHeader: React.FC<{ title: string; subtitle: string }> = ({ title, s
 
 // --- Main Component ---
 const SettingsPage: React.FC = () => {
-  const { user, loading: authLoading, updatePassword, updateUser } = useAuth();
+  const { user, loading: authLoading,  updateUser } = useAuth();
   const axiosSecure = useAxiosSecure();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -116,7 +116,7 @@ const SettingsPage: React.FC = () => {
     }
     setIsSubmitting(true);
     try {
-      await updatePassword(passwordData.newPassword);
+      // await updatePassword(passwordData.newPassword);
       toast.success("Password updated successfully!");
       setPasswordData({ newPassword: "", confirmNewPassword: "" });
     } catch (err: any) {
