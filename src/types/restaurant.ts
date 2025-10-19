@@ -3,36 +3,53 @@ export interface Restaurant {
   _id: string;
   name: string;
   email: string;
-  owner_name: string;
+  owner_name?: string;
   phone: string;
   description?: string;
-  cuisine_types: string[];
-  address: {
-    street: string;
+  cuisine?: string[]; // Backend uses 'cuisine' not 'cuisine_types'
+  cuisine_types?: string[]; // Keep for backward compatibility
+  category?: string; // Backend has category field
+  location?: {
+    address: string;
     city: string;
     area: string;
+    coordinates?: {
+      latitude?: number;
+      longitude?: number;
+    };
+  };
+  // Keep old address format for backward compatibility
+  address?: {
+    street?: string;
+    city?: string;
+    area?: string;
     postal_code?: string;
     latitude?: number;
     longitude?: number;
   };
   logo_url?: string;
   banner_url?: string;
+  cover_image?: string | null;
+  images?: string[];
   rating: number;
-  total_ratings: number;
-  delivery_time: {
+  total_reviews: number;
+  total_ratings?: number; // Alias
+  delivery_time?: {
     min: number;
     max: number;
   };
-  delivery_fee: number;
+  delivery_fee?: number;
   minimum_order?: number;
-  is_open: boolean;
+  is_open?: boolean;
+  is_active?: boolean;
+  is_verified?: boolean;
   opening_hours?: {
     [key: string]: {
       open: string;
       close: string;
     };
   };
-  status: 'pending' | 'approved' | 'rejected' | 'suspended' | 'active';
+  status?: 'pending' | 'approved' | 'rejected' | 'suspended' | 'active';
   featured?: boolean;
   created_at: string;
   updated_at: string;

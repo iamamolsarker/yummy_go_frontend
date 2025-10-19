@@ -153,7 +153,10 @@ const RestaurantDetails: React.FC = () => {
     );
   }
 
-  const isTemporarilyUnavailable = !restaurant.is_open || restaurant.status !== 'active';
+  const isTemporarilyUnavailable = 
+    (restaurant.is_open === false) || 
+    (restaurant.is_active === false) || 
+    (restaurant.status && restaurant.status !== 'active');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -201,13 +204,13 @@ const RestaurantDetails: React.FC = () => {
               <div>
                 <h1 className="text-3xl font-bold text-dark-title mb-2">{restaurant.name}</h1>
                 <p className="text-gray-600 mb-2">
-                  {restaurant.cuisine_types?.join(' · ') || 'Restaurant'}
+                  {(restaurant.cuisine || restaurant.cuisine_types)?.join(' · ') || 'Restaurant'}
                 </p>
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
                     <Star size={16} className="fill-primary text-primary" />
                     <span className="font-semibold text-dark-title">{restaurant.rating?.toFixed(1) || '0.0'}</span>
-                    <span>({restaurant.total_ratings || 0}+)</span>
+                    <span>({(restaurant.total_reviews || restaurant.total_ratings || 0)}+)</span>
                   </div>
                   <span>·</span>
                   <span>Min. order Tk {restaurant.minimum_order || 0}</span>
@@ -234,14 +237,20 @@ const RestaurantDetails: React.FC = () => {
 
           {/* Delivery Info Banner */}
           <div className="mt-4 flex items-center gap-6 text-sm">
-            <div className="flex items-center gap-2 text-gray-600">
-              <Clock size={16} />
-              <span>{restaurant.delivery_time?.min || 0}-{restaurant.delivery_time?.max || 0} min</span>
-            </div>
-            <span className="text-gray-400">·</span>
+            {restaurant.delivery_time && (
+              <>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Clock size={16} />
+                  <span>{restaurant.delivery_time.min}-{restaurant.delivery_time.max} min</span>
+                </div>
+                <span className="text-gray-400">·</span>
+              </>
+            )}
             <div className="flex items-center gap-2 text-gray-600">
               <MapPin size={16} />
-              <span>{restaurant.address?.area || ''}, {restaurant.address?.city || ''}</span>
+              <span>
+                {restaurant.location?.area || restaurant.address?.area || ''}, {restaurant.location?.city || restaurant.address?.city || ''}
+              </span>
             </div>
           </div>
 
@@ -476,9 +485,17 @@ const RestaurantDetails: React.FC = () => {
                     <MapPin size={18} className="text-primary flex-shrink-0 mt-1" />
                     <div>
                       <p className="font-semibold text-gray-800 mb-1 text-sm">Address</p>
-                      <p className="text-sm text-gray-600">
-                        {restaurant.address?.street || ''}, {restaurant.address?.area || ''}<br />
-                        {restaurant.address?.city || ''}
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        {restaurant.location?.address || restaurant.address?.street || 'Address not available'}
+                        {(restaurant.location?.area || restaurant.address?.area) && (
+                          <><br />{restaurant.location?.area || restaurant.address?.area}</>
+                        )}
+                        {(restaurant.location?.city || restaurant.address?.city) && (
+                          <>, {restaurant.location?.city || restaurant.address?.city}</>
+                        )}
+                        {restaurant.address?.postal_code && (
+                          <> - {restaurant.address.postal_code}</>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -498,18 +515,22 @@ const RestaurantDetails: React.FC = () => {
                   </div>
 
                   {/* Delivery Info */}
-                  <div className="pt-4 border-t border-gray-200">
-                    <div className="flex justify-between mb-2 text-sm">
-                      <span className="text-gray-600">Delivery Fee</span>
-                      <span className="font-semibold text-gray-800">৳{restaurant.delivery_fee || 0}</span>
+                  {(restaurant.delivery_fee !== undefined || restaurant.minimum_order) && (
+                    <div className="pt-4 border-t border-gray-200">
+                      {restaurant.delivery_fee !== undefined && (
+                        <div className="flex justify-between mb-2 text-sm">
+                          <span className="text-gray-600">Delivery Fee</span>
+                          <span className="font-semibold text-gray-800">৳{restaurant.delivery_fee}</span>
+                        </div>
+                      )}
+                      {restaurant.minimum_order && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Minimum Order</span>
+                          <span className="font-semibold text-gray-800">৳{restaurant.minimum_order}</span>
+                        </div>
+                      )}
                     </div>
-                    {restaurant.minimum_order && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Minimum Order</span>
-                        <span className="font-semibold text-gray-800">৳{restaurant.minimum_order}</span>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -597,11 +618,11 @@ const RestaurantDetails: React.FC = () => {
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Delivery Fee</span>
-                  <span className="font-semibold">৳{restaurant.delivery_fee}</span>
+                  <span className="font-semibold">৳{restaurant.delivery_fee || 0}</span>
                 </div>
                 <div className="flex justify-between text-xl font-bold text-dark-title pt-3 border-t border-gray-300">
                   <span>Total</span>
-                  <span className="text-primary">৳{cartTotal + restaurant.delivery_fee}</span>
+                  <span className="text-primary">৳{cartTotal + (restaurant.delivery_fee ?? 0)}</span>
                 </div>
               </div>
               <button className="w-full bg-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-primary/90 transition-colors">
