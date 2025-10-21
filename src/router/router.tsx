@@ -27,6 +27,7 @@ import Restaurants from "../pages/restaurants/Restaurants";
 import RestaurantDetails from "../pages/restaurants/RestaurantDetails";
 import Analytics from "../Dashboard/Admin/Analytics/analytics";
 import Reports from "../Dashboard/Admin/Reports/reports";
+import MenuManagement from "../Dashboard/Restaurant_Owner/MenuManagement/MenuManagement";
 
 
 
@@ -131,6 +132,10 @@ export const router = createBrowserRouter([
         path: "rider/performance",
         element: <RiderPerformance />
       },
+      {
+        path: "restaurant/menu",
+        element: <MenuManagement></MenuManagement>
+      }
 
     ]
   },
