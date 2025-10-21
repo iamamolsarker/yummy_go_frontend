@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -9,7 +9,6 @@ import {
   Heart,
   Share2,
   Search,
-  ShoppingCart,
   Plus,
   Minus,
   X,
@@ -17,24 +16,34 @@ import {
 } from 'lucide-react';
 import { FaLeaf, FaCarrot, FaCheckCircle, FaUtensils } from 'react-icons/fa';
 import useAxios from '../../hooks/useAxios';
+import PageContainer from '../../components/shared/PageContainer';
+import { useCart } from '../../hooks/useCart';
 import type { Restaurant, MenuItem } from '../../types/restaurant';
-
-// Cart Item Type
-interface CartItem extends MenuItem {
-  quantity: number;
-}
 
 const RestaurantDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const axios = useAxios();
+  
+  // Use global cart context
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const { 
+    localCart, // Used for syncing menu items with cart
+    setLocalCart,
+    backendCart,
+    addToCart: addToCartGlobal, 
+    removeFromCart: removeFromCartGlobal,
+    getItemQuantity,
+    showToast 
+  } = useCart();
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   // State Management
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [itemNotes, setItemNotes] = useState('');
 
   // Fetch Restaurant Details
   const { data: restaurant, isLoading: restaurantLoading } = useQuery<Restaurant>({
@@ -86,53 +95,61 @@ const RestaurantDetails: React.FC = () => {
     return filtered;
   }, [menuItems, selectedCategory, searchQuery]);
 
-  // Cart Functions
-  const addToCart = (item: MenuItem) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(cartItem => cartItem._id === item._id);
-      if (existingItem) {
-        return prevCart.map(cartItem =>
-          cartItem._id === item._id
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
-            : cartItem
-        );
-      }
-      return [...prevCart, { ...item, quantity: 1 }];
-    });
+  // Sync local cart with backend cart on load (sync menu items with cart)
+  useEffect(() => {
+    if (backendCart && backendCart.items.length > 0 && backendCart.restaurant_id === id) {
+      // Map backend cart items to local cart with full menu details
+      const mappedCart = backendCart.items.map(item => {
+        const menuItem = menuItems.find(m => m._id === item.menu_id);
+        if (menuItem) {
+          return {
+            ...menuItem,
+            quantity: item.quantity,
+            notes: item.notes,
+          };
+        }
+        return null;
+      }).filter(Boolean);
+      
+      setLocalCart(mappedCart as typeof localCart);
+    }
+  }, [backendCart, id, menuItems, setLocalCart]);
+
+  // Wrapper functions to add restaurant ID
+  const addToCart = (item: MenuItem, notes?: string) => {
+    addToCartGlobal(item, notes, id);
   };
 
   const removeFromCart = (itemId: string) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(cartItem => cartItem._id === itemId);
-      if (existingItem && existingItem.quantity > 1) {
-        return prevCart.map(cartItem =>
-          cartItem._id === itemId
-            ? { ...cartItem, quantity: cartItem.quantity - 1 }
-            : cartItem
-        );
+    removeFromCartGlobal(itemId);
+  };
+
+  // Share functionality
+  const handleShare = async () => {
+    const shareData = {
+      title: restaurant?.name || 'Restaurant',
+      text: `Check out ${restaurant?.name} on YummyGo!`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        showToast('Link copied to clipboard!');
       }
-      return prevCart.filter(cartItem => cartItem._id !== itemId);
-    });
+    } catch (error) {
+      console.error('Share failed:', error);
+    }
   };
-
-  const getItemQuantity = (itemId: string) => {
-    const item = cart.find(cartItem => cartItem._id === itemId);
-    return item ? item.quantity : 0;
-  };
-
-  const cartTotal = useMemo(() => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-  }, [cart]);
-
-  const cartItemsCount = useMemo(() => {
-    return cart.reduce((total, item) => total + item.quantity, 0);
-  }, [cart]);
 
   // Loading State
   if (restaurantLoading || menuLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="loading loading-spinner loading-lg text-primary"></div>
+        <div className="loading loading-spinner loading-lg" style={{ color: '#EF451C' }}></div>
       </div>
     );
   }
@@ -144,7 +161,8 @@ const RestaurantDetails: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Restaurant not found</h2>
           <button
             onClick={() => navigate('/restaurants')}
-            className="text-primary hover:underline"
+            className="hover:underline"
+            style={{ color: '#EF451C' }}
           >
             Back to Restaurants
           </button>
@@ -162,25 +180,25 @@ const RestaurantDetails: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb Navigation */}
       <div className="bg-white border-b">
-        <div className="container max-w-7xl mx-auto px-4 py-3">
+        <PageContainer className="py-3">
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <button onClick={() => navigate('/')} className="hover:text-primary">
+            <button onClick={() => navigate('/')} className="hover:opacity-80 transition-opacity" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = '#EF451C'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>
               Home
             </button>
             <ChevronRight size={16} />
-            <button onClick={() => navigate('/restaurants')} className="hover:text-primary">
+            <button onClick={() => navigate('/restaurants')} className="hover:opacity-80 transition-opacity" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = '#EF451C'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>
               Restaurant List
             </button>
             <ChevronRight size={16} />
             <span className="text-dark-title font-medium">{restaurant.name}</span>
           </div>
-        </div>
+        </PageContainer>
       </div>
 
       {/* Restaurant Header - Compact Foodpanda Style */}
       <div className="bg-white border-b">
-        <div className="container max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-start justify-between gap-6">
+          <PageContainer>
+            <div className="flex items-start justify-between gap-6">
             {/* Left: Logo + Info */}
             <div className="flex items-start gap-4">
               {/* Restaurant Logo */}
@@ -208,7 +226,7 @@ const RestaurantDetails: React.FC = () => {
                 </p>
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
-                    <Star size={16} className="fill-primary text-primary" />
+                    <Star size={16} style={{ fill: '#EF451C', color: '#EF451C' }} />
                     <span className="font-semibold text-dark-title">{restaurant.rating?.toFixed(1) || '0.0'}</span>
                     <span>({(restaurant.total_reviews || restaurant.total_ratings || 0)}+)</span>
                   </div>
@@ -223,13 +241,18 @@ const RestaurantDetails: React.FC = () => {
               <button
                 onClick={() => setIsFavorite(!isFavorite)}
                 className="p-3 rounded-full border border-gray-300 hover:bg-gray-50 transition-colors"
+                title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               >
                 <Heart
                   size={24}
                   className={isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-600'}
                 />
               </button>
-              <button className="p-3 rounded-full border border-gray-300 hover:bg-gray-50 transition-colors">
+              <button 
+                onClick={handleShare}
+                className="p-3 rounded-full border border-gray-300 hover:bg-gray-50 transition-colors"
+                title="Share restaurant"
+              >
                 <Share2 size={24} className="text-gray-600" />
               </button>
             </div>
@@ -260,12 +283,12 @@ const RestaurantDetails: React.FC = () => {
               <p className="text-red-800 font-semibold">⚠️ Temporarily Unavailable - This restaurant is currently not accepting orders</p>
             </div>
           )}
-        </div>
+        </PageContainer>
       </div>
 
       {/* Search & Category Tabs - Sticky */}
       <div className="bg-white border-b sticky top-0 z-30">
-        <div className="container max-w-7xl mx-auto px-4">
+        <PageContainer className="py-0">
           {/* Search */}
           <div className="py-4">
             <div className="relative max-w-md">
@@ -294,16 +317,17 @@ const RestaurantDetails: React.FC = () => {
               >
                 {category}
                 {selectedCategory === category && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: '#EF451C' }}></div>
                 )}
               </button>
             ))}
           </div>
-        </div>
+        </PageContainer>
       </div>
 
       {/* Main Content */}
       <div className="container max-w-7xl mx-auto px-4 py-6">
+      <PageContainer>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Menu Section */}
           <div className="lg:col-span-2">
@@ -413,18 +437,27 @@ const RestaurantDetails: React.FC = () => {
                             <div>
                               {quantity === 0 ? (
                                 <button
-                                  onClick={() => addToCart(item)}
+                                  onClick={() => {
+                                    if (item.ingredients || item.allergens || item.nutrition) {
+                                      // Open modal for items with details
+                                      setSelectedItem(item);
+                                    } else {
+                                      // Quick add for simple items
+                                      addToCart(item);
+                                    }
+                                  }}
                                   disabled={!item.is_available}
-                                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                  style={item.is_available ? { backgroundColor: '#EF451C' } : {}}
+                                  className={`cursor-pointer px-4 py-2 rounded-lg font-semibold text-sm ${
                                     item.is_available
-                                      ? 'bg-white border-2 border-gray-300 text-primary hover:bg-gray-50'
+                                      ? 'text-white hover:opacity-90'
                                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                   }`}
                                 >
-                                  <Plus size={18} />
+                                  {item.is_available ? 'Add' : 'Unavailable'}
                                 </button>
                               ) : (
-                                <div className="flex items-center gap-2 bg-primary text-white rounded-full px-3 py-1 w-fit">
+                                <div className="flex items-center gap-2 text-white rounded-full px-3 py-1 w-fit" style={{ backgroundColor: '#EF451C' }}>
                                   <button
                                     onClick={() => removeFromCart(item._id)}
                                     className="hover:scale-110 transition-transform"
@@ -482,7 +515,7 @@ const RestaurantDetails: React.FC = () => {
                 <div className="space-y-4">
                   {/* Address */}
                   <div className="flex items-start gap-3">
-                    <MapPin size={18} className="text-primary flex-shrink-0 mt-1" />
+                    <MapPin size={18} className="flex-shrink-0 mt-1" style={{ color: '#EF451C' }} />
                     <div>
                       <p className="font-semibold text-gray-800 mb-1 text-sm">Address</p>
                       <p className="text-sm text-gray-600 leading-relaxed">
@@ -502,12 +535,13 @@ const RestaurantDetails: React.FC = () => {
 
                   {/* Phone */}
                   <div className="flex items-start gap-3">
-                    <Phone size={18} className="text-primary flex-shrink-0 mt-1" />
+                    <Phone size={18} className="flex-shrink-0 mt-1" style={{ color: '#EF451C' }} />
                     <div>
                       <p className="font-semibold text-gray-800 mb-1 text-sm">Phone</p>
                       <a
                         href={`tel:${restaurant.phone || ''}`}
-                        className="text-sm text-primary hover:underline"
+                        className="text-sm hover:underline"
+                        style={{ color: '#EF451C' }}
                       >
                         {restaurant.phone || 'N/A'}
                       </a>
@@ -535,98 +569,134 @@ const RestaurantDetails: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        </PageContainer>
       </div>
 
-      {/* Floating Cart Button */}
-      {cartItemsCount > 0 && (
-        <button
-          onClick={() => setIsCartOpen(true)}
-          className="fixed bottom-6 right-6 bg-primary text-white px-6 py-4 rounded-full shadow-2xl hover:scale-105 transition-transform flex items-center gap-3 z-50"
-        >
-          <ShoppingCart size={24} />
-          <span className="font-bold text-lg">{cartItemsCount} items</span>
-          <span className="font-bold text-lg">৳{cartTotal}</span>
-        </button>
-      )}
-
-      {/* Cart Modal */}
-      {isCartOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            {/* Cart Header */}
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-dark-title">Your Cart</h2>
+      {/* Item Customization Modal */}
+      {selectedItem && (
+        <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="relative">
+              {selectedItem.image && (
+                <img
+                  src={selectedItem.image}
+                  alt={selectedItem.name}
+                  className="w-full h-48 object-cover"
+                />
+              )}
               <button
-                onClick={() => setIsCartOpen(false)}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
+                onClick={() => {
+                  setSelectedItem(null);
+                  setItemNotes('');
+                }}
+                className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
-            {/* Cart Items */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-4">
-                {cart.map((item) => (
-                  <div
-                    key={item._id}
-                    className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg"
-                  >
-                    {item.image && (
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-20 h-20 object-cover rounded-lg"
-                      />
+            {/* Modal Content */}
+            <div className="p-6 flex-1 overflow-y-auto">
+              <h3 className="text-2xl font-bold text-dark-title mb-2">{selectedItem.name}</h3>
+              <p className="text-xl font-bold mb-4" style={{ color: '#EF451C' }}>৳{selectedItem.price}</p>
+              
+              {selectedItem.description && (
+                <p className="text-gray-600 mb-4">{selectedItem.description}</p>
+              )}
+
+              {/* Dietary Info */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {selectedItem.is_vegetarian && (
+                  <span className="px-3 py-1.5 bg-green-100 text-green-700 text-sm rounded-lg font-medium flex items-center gap-1">
+                    <FaLeaf size={12} />
+                    Vegetarian
+                  </span>
+                )}
+                {selectedItem.is_vegan && (
+                  <span className="px-3 py-1.5 bg-green-100 text-green-700 text-sm rounded-lg font-medium flex items-center gap-1">
+                    <FaCarrot size={12} />
+                    Vegan
+                  </span>
+                )}
+                {selectedItem.is_halal && (
+                  <span className="px-3 py-1.5 bg-blue-100 text-blue-700 text-sm rounded-lg font-medium flex items-center gap-1">
+                    <FaCheckCircle size={12} />
+                    Halal
+                  </span>
+                )}
+              </div>
+
+              {/* Nutrition Info */}
+              {selectedItem.nutrition && (
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <h4 className="font-semibold text-gray-800 mb-3">Nutrition Information</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    {selectedItem.nutrition.calories != null && (
+                      <div>
+                        <span className="text-gray-600">Calories:</span>
+                        <span className="ml-2 font-semibold">{selectedItem.nutrition.calories}</span>
+                      </div>
                     )}
-                    <div className="flex-1">
-                      <h4 className="font-bold text-gray-800 mb-1">{item.name}</h4>
-                      <p className="text-primary font-semibold">৳{item.price}</p>
-                    </div>
-                    <div className="flex items-center gap-3 bg-white rounded-lg px-3 py-2 border border-gray-200">
-                      <button
-                        onClick={() => removeFromCart(item._id)}
-                        className="text-primary hover:scale-110 transition-transform"
-                      >
-                        <Minus size={18} />
-                      </button>
-                      <span className="font-bold min-w-[20px] text-center">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => addToCart(item)}
-                        className="text-primary hover:scale-110 transition-transform"
-                      >
-                        <Plus size={18} />
-                      </button>
-                    </div>
-                    <p className="font-bold text-gray-800 w-20 text-right">
-                      ৳{item.price * item.quantity}
-                    </p>
+                    {selectedItem.nutrition.protein != null && (
+                      <div>
+                        <span className="text-gray-600">Protein:</span>
+                        <span className="ml-2 font-semibold">{selectedItem.nutrition.protein}g</span>
+                      </div>
+                    )}
+                    {selectedItem.nutrition.carbs != null && (
+                      <div>
+                        <span className="text-gray-600">Carbs:</span>
+                        <span className="ml-2 font-semibold">{selectedItem.nutrition.carbs}g</span>
+                      </div>
+                    )}
+                    {selectedItem.nutrition.fat != null && (
+                      <div>
+                        <span className="text-gray-600">Fat:</span>
+                        <span className="ml-2 font-semibold">{selectedItem.nutrition.fat}g</span>
+                      </div>
+                    )}
                   </div>
-                ))}
+                </div>
+              )}
+
+              {/* Allergens */}
+              {selectedItem.allergens && selectedItem.allergens.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="font-semibold text-gray-800 mb-2">Allergens</h4>
+                  <p className="text-sm text-red-600">{selectedItem.allergens.join(', ')}</p>
+                </div>
+              )}
+
+              {/* Special Instructions */}
+              <div className="mb-4">
+                <label className="block font-semibold text-gray-800 mb-2">
+                  Special Instructions (Optional)
+                </label>
+                <textarea
+                  value={itemNotes}
+                  onChange={(e) => setItemNotes(e.target.value)}
+                  placeholder="E.g., No onions, extra spicy..."
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                  rows={3}
+                />
               </div>
             </div>
 
-            {/* Cart Footer */}
+            {/* Modal Footer */}
             <div className="p-6 border-t border-gray-200 bg-gray-50">
-              <div className="space-y-3 mb-4">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
-                  <span className="font-semibold">৳{cartTotal}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Delivery Fee</span>
-                  <span className="font-semibold">৳{restaurant.delivery_fee || 0}</span>
-                </div>
-                <div className="flex justify-between text-xl font-bold text-dark-title pt-3 border-t border-gray-300">
-                  <span>Total</span>
-                  <span className="text-primary">৳{cartTotal + (restaurant.delivery_fee ?? 0)}</span>
-                </div>
-              </div>
-              <button className="w-full bg-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-primary/90 transition-colors">
-                Proceed to Checkout
+              <button
+                onClick={() => {
+                  addToCart(selectedItem, itemNotes);
+                  setSelectedItem(null);
+                  setItemNotes('');
+                }}
+                disabled={!selectedItem.is_available}
+                style={!selectedItem.is_available ? {} : { backgroundColor: '#EF451C' }}
+                className="w-full text-white py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-opacity disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {selectedItem.is_available ? `Add to Cart - ৳${selectedItem.price}` : 'Not Available'}
               </button>
             </div>
           </div>

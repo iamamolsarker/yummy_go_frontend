@@ -7,12 +7,15 @@ import { Link } from "react-router";
 import useAuth from "../../../hooks/useAuth";
 import { toast } from "react-toastify";
 import useUserRole from "../../../hooks/useUserRole";
+import { useCart } from "../../../hooks/useCart";
+import CartModal from "../../Cart/CartModal";
 
 const Navbar: React.FC = () => {
   // Replace with your AuthContext or props
   const { user, logOut } = useAuth();
   console.log(user)
   const { isAdmin, isRider, isRestaurantOwner } = useUserRole();
+  const { cartItemsCount, setIsCartOpen } = useCart();
 
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -63,8 +66,16 @@ const Navbar: React.FC = () => {
         {/* Right Side */}
         <div className="flex items-center gap-4">
           {/* Cart */}
-          <button className="text-2xl text-gray-700 hover:text-[#ef451c]">
+          <button 
+            onClick={() => setIsCartOpen(true)}
+            className="relative text-2xl text-gray-700 hover:text-[#ef451c] transition-colors"
+          >
             <FiShoppingCart />
+            {cartItemsCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-[#ef451c] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {cartItemsCount}
+              </span>
+            )}
           </button>
 
           {/* If user logged in */}
@@ -146,6 +157,9 @@ const Navbar: React.FC = () => {
           )}
         </div>
       </div>
+      
+      {/* Cart Modal */}
+      <CartModal />
     </nav>
   );
 };
