@@ -26,6 +26,7 @@ import {
 import useAuth from "../hooks/useAuth";
 import useUserRole from "../hooks/useUserRole";
 import { toast } from "react-toastify";
+import { CartProvider } from "../contextsProvider/CartContext";
 
 const DashboardLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -117,8 +118,9 @@ const DashboardLayout: React.FC = () => {
   const sidebarWidth = collapsed ? "w-16" : "w-64";
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
+    <CartProvider>
+      <div className="flex h-screen bg-gray-50">
+        {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 bg-white shadow-lg transition-transform duration-300 flex flex-col 
   ${sidebarWidth} 
@@ -287,7 +289,8 @@ const DashboardLayout: React.FC = () => {
           onClick={() => setMobileOpen(false)}
         />
       )}
-    </div>
+      </div>
+    </CartProvider>
   );
 };
 
