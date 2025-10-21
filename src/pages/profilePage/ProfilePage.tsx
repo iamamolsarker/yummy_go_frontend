@@ -1,9 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from 'react';
-import { Edit, Crown, Image as ImageIcon, User, Phone, Mail, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Edit, Crown, Image as ImageIcon, User, Phone, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { toast } from 'react-toastify';
 import ProfileOpeningLoading from './loading/ProfileOpeningLoading';
 import useAuth from '../../hooks/useAuth';
+import useAxiosSecure from '../../hooks/useAxiosSecure';
 import ImageUploadModal from './imageUpload/ImageUploadModal';
 
 // --- Reusable Components ---
@@ -29,129 +31,203 @@ const SectionHeader = ({ title }: { title: string }) => (
     </div>
 );
 
-// --- Type Definitions ---
-type Address = {
-    addressLine1: string;
-    city: string;
-    postCode: string;
-};
-
-type CustomUser = {
-    email?: string | null;
-    photoURL?: string | null;
-    displayName?: string | null;
-    firstName?: string;
-    lastName?: string;
-    mobile?: string;
-    address?: Address | null;
-};
 
 export default function ProfilePage() {
     // --- Hooks and State ---
-    // FIX: Removed 'reFetch' as it is not provided by your useAuth hook.
-    const { user, loading } = useAuth();
-    
-    const [userData, setUserData] = useState<CustomUser | null>(user as CustomUser | null);
+    const { user, loading: authLoading } = useAuth();
+    const axiosSecure = useAxiosSecure();
+
+    const [userData, setUserData] = useState<any | null>(null);
     const [activeTab, setActiveTab] = useState('User Profile');
-    const [successMessage, setSuccessMessage] = useState('');
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [coverImage, setCoverImage] = useState('https://i.ibb.co/nN4RbRsK/yummy-go-car-bike.png');
     const [profileImage, setProfileImage] = useState('https://i.ibb.co/PZjxHVfY/yummy-go-logo.png');
-    
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingImageType, setEditingImageType] = useState<'cover' | 'profile' | null>(null);
 
     const [profileData, setProfileData] = useState({ firstName: '', lastName: '', mobile: '' });
-    const [addressData, setAddressData] = useState({ addressLine1: '', city: '', postCode: '' });
+    // 100% FINAL FIX: State now matches the flat structure of the backend
+    const [addressData, setAddressData] = useState({
+        address: '', // This field is for the street
+        city: '',
+        area: '',
+    });
+
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
     const [passwordVisibility, setPasswordVisibility] = useState({ current: false, new: false, confirm: false });
 
-    useEffect(() => {
-        if (user) {
-            const typedUser = user as CustomUser;
-            setUserData(typedUser); 
-            
-            let firstName = typedUser.firstName || '';
-            let lastName = typedUser.lastName || '';
+    const syncUIWithUserData = useCallback((dbUser: any) => {
+        if (!dbUser) return;
+        const name = dbUser.name || user?.displayName || '';
+        const nameParts = name.split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
 
-            if (!firstName && typedUser.displayName) {
-                const nameParts = typedUser.displayName.split(' ');
-                firstName = nameParts[0] || '';
-                lastName = nameParts.slice(1).join(' ') || '';
-            }
+        setProfileData({
+            firstName: firstName,
+            lastName: lastName,
+            mobile: dbUser.phone || '',
+        });
 
-            setProfileData({
-                firstName: firstName,
-                lastName: lastName,
-                mobile: typedUser.mobile || '',
-            });
-
-            setAddressData({
-                addressLine1: typedUser.address?.addressLine1 || '',
-                city: typedUser.address?.city || '',
-                postCode: typedUser.address?.postCode || '',
-            });
-
-            if (typedUser.photoURL) {
-                setProfileImage(typedUser.photoURL);
-            }
-        }
+        // 100% FINAL FIX: Map from backend's flat structure
+        setAddressData({
+            address: dbUser.address || '',
+            city: dbUser.city || '',
+            area: dbUser.area || '',
+        });
+        setUserData(dbUser);
     }, [user]);
-    
+
+
     useEffect(() => {
         const savedProfile = localStorage.getItem('userProfileImage');
         const savedCover = localStorage.getItem('userCoverImage');
-        if (savedProfile) {
-            setProfileImage(savedProfile);
+        if (savedProfile) setProfileImage(savedProfile);
+        if (savedCover) setCoverImage(savedCover);
+
+        if (authLoading) {
+            setIsLoading(true);
+            return;
         }
-        if (savedCover) {
-            setCoverImage(savedCover);
+        if (!user) {
+            setIsLoading(false);
+            setUserData(null);
+            return;
         }
-    }, []);
 
-    if (loading) return <ProfileOpeningLoading />;
-    if (!userData) return <div className="flex items-center justify-center min-h-screen">User not found.</div>;
+        const fetchUserData = async () => {
+            try {
+                setIsLoading(true);
+                const { data } = await axiosSecure.get(`/users/${user.email}`);
+                const dbUser = data.data || data;
 
-    const displayName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.displayName || 'User';
+                syncUIWithUserData(dbUser);
+                setProfileImage(dbUser.profile_image || user.photoURL || 'https://i.ibb.co/PZjxHVfY/yummy-go-logo.png');
 
-    // --- Handlers ---
-    const showSuccessMessage = (message: string) => {
-        setSuccessMessage(message);
-        setTimeout(() => setSuccessMessage(''), 3000);
-    };
+            } catch (err) {
+                console.error("Failed to load user data:", err);
+                toast.error("Failed to load your profile data.");
+                setUserData(null);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, [user, authLoading, axiosSecure, syncUIWithUserData]);
+
+    if (isLoading) return <ProfileOpeningLoading />;
+    if (!userData) return (
+        <div className="flex items-center justify-center min-h-[60vh] text-center text-xl text-red-500 font-semibold">
+            Failed to load user data. <br />
+            Please try logging out and logging back in.
+        </div>
+    );
+
+    const displayName = `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || user?.displayName || 'User';
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>, setState: React.Dispatch<React.SetStateAction<any>>) => {
         setState((prev: any) => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    const handleUploadSuccess = (newUrl: string) => {
+    const handleAddressFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setAddressData((prev: any) => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+
+    const handleUploadSuccess = async (newUrl: string) => {
         if (editingImageType === 'cover') {
             setCoverImage(newUrl);
             localStorage.setItem('userCoverImage', newUrl);
+            toast.success("Cover image updated (local session)!");
         } else if (editingImageType === 'profile') {
-            setProfileImage(newUrl);
-            localStorage.setItem('userProfileImage', newUrl);
+            try {
+                const res = await axiosSecure.patch(`/users/${user?.email}/profile`, { profile_image: newUrl });
+                setProfileImage(newUrl);
+                localStorage.setItem('userProfileImage', newUrl);
+                syncUIWithUserData(res.data.profile);
+                toast.success("Profile picture updated successfully!");
+            } catch (err: any) {
+                console.error("Profile image save error:", err);
+                toast.error(err.response?.data?.message || "Failed to update profile picture.");
+            }
         }
         closeModal();
     };
-    
-    // FIX: Removed 'async' and the 'reFetch' call from the save handlers.
-    const handleProfileSave = () => {
-        setUserData(prev => ({ ...prev, ...profileData })); 
-        showSuccessMessage('Profile updated for this session!');
-        setActiveTab('User Profile');
+
+    const handleProfileSave = async () => {
+        const fullName = `${profileData.firstName} ${profileData.lastName}`.trim();
+        if (!fullName) {
+            toast.error("Name cannot be empty.");
+            return;
+        }
+        setIsSubmitting(true);
+        try {
+            const backendProfileData = {
+                name: fullName,
+                phone: profileData.mobile || "",
+            };
+            const res = await axiosSecure.patch(`/users/${user?.email}/profile`, backendProfileData);
+
+            syncUIWithUserData(res.data.profile);
+
+            toast.success('Profile updated successfully!');
+            setActiveTab('User Profile');
+        } catch (err: any) {
+            console.error("Profile save error:", err);
+            toast.error(err.response?.data?.message || "Failed to update profile.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
-    const handleAddressSave = () => {
-        setUserData(prev => ({ ...prev, address: addressData })); 
-        showSuccessMessage('Address updated for this session!');
-        setActiveTab('User Profile');
+
+    const handleAddressSave = async () => {
+        if (!addressData.address) {
+            toast.error("Address Line 1 (Street) cannot be empty.");
+            return;
+        }
+        setIsSubmitting(true);
+        try {
+            // 100% FINAL FIX: Send a flat object with 'address', 'city', 'area' as expected by the backend.
+            const backendAddressData = {
+                address: addressData.address || "",
+                city: addressData.city || "",
+                area: addressData.area || "",
+            };
+            const res = await axiosSecure.patch(`/users/${user?.email}/profile`, backendAddressData);
+
+            syncUIWithUserData(res.data.profile);
+
+            toast.success('Address updated successfully!');
+            setActiveTab('User Profile');
+        } catch (err: any) {
+            console.error("Address save error:", err);
+            if (err.response) {
+                console.error("Server Response:", err.response.data);
+            }
+            toast.error(err.response?.data?.message || "Failed to update address.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
+
     const handlePasswordUpdate = () => {
-        if (passwordData.newPassword !== passwordData.confirmNewPassword) return alert("New passwords do not match.");
-        showSuccessMessage('Password change simulated!');
-        setPasswordData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
-        setActiveTab('User Profile');
+        if (passwordData.newPassword !== passwordData.confirmNewPassword) {
+            toast.error("New passwords do not match.");
+            return;
+        }
+        setIsSubmitting(true);
+        setTimeout(() => {
+            setIsSubmitting(false);
+            toast.success('Password change simulated!');
+            setPasswordData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+            setActiveTab('User Profile');
+        }, 1000);
     };
+
     const openModal = (type: 'cover' | 'profile') => { setEditingImageType(type); setIsModalOpen(true); };
     const closeModal = () => setIsModalOpen(false);
     const togglePasswordVisibility = (field: 'current' | 'new' | 'confirm') => {
@@ -164,18 +240,22 @@ export default function ProfilePage() {
         { name: 'confirmNewPassword', label: 'Confirm New Password', key: 'confirm' as const }
     ];
 
+    const SubmitButton = ({ onClick, text }: { onClick: () => void, text: string }) => (
+        <button
+            onClick={onClick}
+            disabled={isSubmitting}
+            className="bg-orange-500 text-white font-semibold py-2 px-5 rounded-lg hover:bg-orange-600 disabled:bg-gray-400 flex items-center justify-center min-w-[140px]"
+        >
+            {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : text}
+        </button>
+    );
+
     return (
         <div className="bg-gray-100 min-h-screen font-sans relative">
-            {successMessage && (
-                <div className="fixed top-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg z-50 animate-pulse">
-                    {successMessage}
-                </div>
-            )}
-
             <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Sidebar */}
-                    <div className="lg:col-span-1 bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div className="lg:col-span-1 bg-white rounded-lg shadow-lg overflow-hidden h-fit">
                         <div className="relative h-40 bg-cover bg-center" style={{ backgroundImage: `url('${coverImage}')` }}>
                             <button onClick={() => openModal('cover')} className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md hover:bg-gray-50 flex items-center space-x-1">
                                 <ImageIcon size={16} /> <span className="text-sm">Edit Cover</span>
@@ -223,10 +303,10 @@ export default function ProfilePage() {
                                     </div>
                                     <h3 className="font-semibold text-lg mt-6 mb-3">Saved Address:</h3>
                                     <div className="bg-gray-50 p-4 min-h-[80px] border rounded-md text-gray-600">
-                                        {addressData.addressLine1 ? (
+                                        {addressData.address ? (
                                             <div>
-                                                <p>{addressData.addressLine1}</p>
-                                                <p>{addressData.city}, {addressData.postCode}</p>
+                                                <p>{addressData.address}</p>
+                                                <p>{addressData.city}, {addressData.area}</p>
                                             </div>
                                         ) : "Address not added yet!"}
                                     </div>
@@ -244,21 +324,22 @@ export default function ProfilePage() {
                                         <InputField id="updateMobile" name="mobile" label="Mobile Number" value={profileData.mobile} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFormChange(e, setProfileData)} />
                                     </div>
                                     <div className="mt-8 text-right">
-                                        <button onClick={handleProfileSave} className="bg-orange-500 text-white font-semibold py-2 px-5 rounded-lg hover:bg-orange-600">Save Changes</button>
+                                        <SubmitButton onClick={handleProfileSave} text="Save Changes" />
                                     </div>
                                 </div>
                             )}
-                            
+
                             {activeTab === 'Update Address' && (
                                 <div>
                                     <SectionHeader title="Update Your Address" />
                                     <div className="mt-6 space-y-4">
-                                        <InputField id="addressLine1" name="addressLine1" label="Address Line 1" value={addressData.addressLine1} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFormChange(e, setAddressData)} />
-                                        <InputField id="city" name="city" label="City" value={addressData.city} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFormChange(e, setAddressData)} />
-                                        <InputField id="postCode" name="postCode" label="Post Code" value={addressData.postCode} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFormChange(e, setAddressData)} />
+                                        {/* 100% FINAL FIX: name="address" now matches the backend */}
+                                        <InputField id="address" name="address" label="Address Line 1 (Street)" value={addressData.address} onChange={handleAddressFormChange} />
+                                        <InputField id="city" name="city" label="City" value={addressData.city} onChange={handleAddressFormChange} />
+                                        <InputField id="area" name="area" label="Area" value={addressData.area} onChange={handleAddressFormChange} />
                                     </div>
                                     <div className="mt-8 text-right">
-                                        <button onClick={handleAddressSave} className="bg-orange-500 text-white font-semibold py-2 px-5 rounded-lg hover:bg-orange-600">Save Address</button>
+                                        <SubmitButton onClick={handleAddressSave} text="Save Address" />
                                     </div>
                                 </div>
                             )}
@@ -281,7 +362,7 @@ export default function ProfilePage() {
                                         ))}
                                     </div>
                                     <div className="mt-8 text-right">
-                                        <button onClick={handlePasswordUpdate} className="bg-orange-500 text-white font-semibold py-2 px-5 rounded-lg hover:bg-orange-600">Update Password</button>
+                                        <SubmitButton onClick={handlePasswordUpdate} text="Update Password" />
                                     </div>
                                 </div>
                             )}
@@ -293,3 +374,4 @@ export default function ProfilePage() {
         </div>
     );
 }
+
