@@ -23,6 +23,7 @@
     "leaflet": "^1.9.4",
     "leaflet-routing-machine": "^3.2.12",
     "lucide-react": "^0.544.0",
+    "prop-types": "^15.8.1",
     "react": "^19.1.1",
     "react-awesome-reveal": "^4.3.1",
     "react-csv": "^2.2.2",
