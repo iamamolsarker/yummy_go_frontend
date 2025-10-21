@@ -27,6 +27,8 @@ import Restaurants from "../pages/Restaurants/Restaurants";
 import RestaurantDetails from "../pages/Restaurants/RestaurantDetails";
 import Analytics from "../Dashboard/Admin/Analytics/Analytics";
 import Reports from "../Dashboard/Admin/Reports/Reports";
+import Checkout from "../pages/checkout/Checkout";
+import OrderConfirmation from "../pages/order-confirmation/OrderConfirmation";
 
 
 
@@ -72,6 +74,22 @@ export const router = createBrowserRouter([
       {
         path: "restaurants/:id",
         element: <RestaurantDetails />
+      },
+      {
+        path: "checkout",
+        element: (
+          <PrivateRoute>
+            <Checkout />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: "order-confirmation/:orderId",
+        element: (
+          <PrivateRoute>
+            <OrderConfirmation />
+          </PrivateRoute>
+        )
       },
 
     ]
