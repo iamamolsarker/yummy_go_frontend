@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { 
   Clock, 
   Star, 
@@ -9,62 +9,41 @@ import {
   Heart,
   Share2,
   Search,
-  ShoppingCart,
   Plus,
   Minus,
   X,
-  ChevronRight,
-  AlertCircle,
-  Check
+  ChevronRight
 } from 'lucide-react';
 import { FaLeaf, FaCarrot, FaCheckCircle, FaUtensils } from 'react-icons/fa';
 import useAxios from '../../hooks/useAxios';
-import useAxiosSecure from '../../hooks/useAxiosSecure';
-import useAuth from '../../hooks/useAuth';
 import PageContainer from '../../components/shared/PageContainer';
+import { useCart } from '../../hooks/useCart';
 import type { Restaurant, MenuItem } from '../../types/restaurant';
-
-// Cart Item Type
-interface CartItem extends MenuItem {
-  quantity: number;
-  notes?: string;
-}
-
-// Backend Cart Response Types
-interface BackendCart {
-  _id: string;
-  user_email: string;
-  restaurant_id: string;
-  items: {
-    menu_id: string;
-    quantity: number;
-    price: number;
-    notes?: string;
-  }[];
-  total_amount: number;
-  status: 'active' | 'checkout' | 'ordered' | 'cancelled';
-  created_at: string;
-  updated_at: string;
-}
 
 const RestaurantDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const axios = useAxios();
-  const axiosSecure = useAxiosSecure();
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+  
+  // Use global cart context
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const { 
+    localCart, // Used for syncing menu items with cart
+    setLocalCart,
+    backendCart,
+    addToCart: addToCartGlobal, 
+    removeFromCart: removeFromCartGlobal,
+    getItemQuantity,
+    showToast 
+  } = useCart();
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   // State Management
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [localCart, setLocalCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [itemNotes, setItemNotes] = useState('');
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
 
   // Fetch Restaurant Details
   const { data: restaurant, isLoading: restaurantLoading } = useQuery<Restaurant>({
@@ -116,31 +95,11 @@ const RestaurantDetails: React.FC = () => {
     return filtered;
   }, [menuItems, selectedCategory, searchQuery]);
 
-  // Fetch Backend Cart
-  const { data: backendCart, refetch: refetchCart } = useQuery<BackendCart | null>({
-    queryKey: ['cart', user?.email],
-    queryFn: async () => {
-      if (!user?.email) return null;
-      try {
-        const response = await axiosSecure.get(`/carts/user/${user.email}`);
-        return response.data.data;
-      } catch (error: unknown) {
-        const err = error as { response?: { status?: number } };
-        if (err.response?.status === 404) {
-          return null; // No cart exists yet
-        }
-        throw error;
-      }
-    },
-    enabled: !!user?.email,
-    staleTime: 1000 * 60, // 1 minute
-  });
-
-  // Sync local cart with backend cart on load
+  // Sync local cart with backend cart on load (sync menu items with cart)
   useEffect(() => {
     if (backendCart && backendCart.items.length > 0 && backendCart.restaurant_id === id) {
-      // Map backend cart items to local cart
-      const mappedCart: CartItem[] = backendCart.items.map(item => {
+      // Map backend cart items to local cart with full menu details
+      const mappedCart = backendCart.items.map(item => {
         const menuItem = menuItems.find(m => m._id === item.menu_id);
         if (menuItem) {
           return {
@@ -150,229 +109,19 @@ const RestaurantDetails: React.FC = () => {
           };
         }
         return null;
-      }).filter(Boolean) as CartItem[];
+      }).filter(Boolean);
       
-      setLocalCart(mappedCart);
+      setLocalCart(mappedCart as typeof localCart);
     }
-  }, [backendCart, id, menuItems]);
+  }, [backendCart, id, menuItems, setLocalCart]);
 
-  // Create Cart Mutation
-  const createCartMutation = useMutation({
-    mutationFn: async () => {
-      const response = await axiosSecure.post('/carts', {
-        user_email: user?.email,
-        restaurant_id: id,
-      });
-      return response.data.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart', user?.email] });
-    },
-  });
-
-  // Add Item to Cart Mutation
-  const addItemMutation = useMutation({
-    mutationFn: async ({ cartId, item, notes }: { cartId: string; item: MenuItem; notes?: string }) => {
-      const response = await axiosSecure.post(`/carts/${cartId}/items`, {
-        menu_id: item._id,
-        quantity: 1,
-        price: item.price,
-        notes: notes || undefined,
-      });
-      return response.data.data;
-    },
-    onSuccess: () => {
-      refetchCart();
-      showToast('Item added to cart!');
-    },
-    onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } } };
-      showToast(err.response?.data?.message || 'Failed to add item');
-    },
-  });
-
-  // Update Item Quantity Mutation
-  const updateQuantityMutation = useMutation({
-    mutationFn: async ({ cartId, menuId, quantity }: { cartId: string; menuId: string; quantity: number }) => {
-      const response = await axiosSecure.patch(`/carts/${cartId}/items/${menuId}/quantity`, {
-        quantity,
-      });
-      return response.data.data;
-    },
-    onSuccess: () => {
-      refetchCart();
-    },
-    onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } } };
-      showToast(err.response?.data?.message || 'Failed to update quantity');
-    },
-  });
-
-  // Remove Item Mutation
-  const removeItemMutation = useMutation({
-    mutationFn: async ({ cartId, menuId }: { cartId: string; menuId: string }) => {
-      const response = await axiosSecure.delete(`/carts/${cartId}/items/${menuId}`);
-      return response.data.data;
-    },
-    onSuccess: () => {
-      refetchCart();
-      showToast('Item removed from cart');
-    },
-    onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } } };
-      showToast(err.response?.data?.message || 'Failed to remove item');
-    },
-  });
-
-  // Clear Cart Mutation
-  const clearCartMutation = useMutation({
-    mutationFn: async (cartId: string) => {
-      const response = await axiosSecure.delete(`/carts/${cartId}/clear`);
-      return response.data.data;
-    },
-    onSuccess: () => {
-      setLocalCart([]);
-      refetchCart();
-      showToast('Cart cleared');
-    },
-  });
-
-  // Toast Helper
-  const showToast = (message: string) => {
-    setToastMessage(message);
-    setShowSuccessToast(true);
-    setTimeout(() => setShowSuccessToast(false), 3000);
+  // Wrapper functions to add restaurant ID
+  const addToCart = (item: MenuItem, notes?: string) => {
+    addToCartGlobal(item, notes, id);
   };
 
-  // Cart Functions with Backend Integration
-  const addToCart = async (item: MenuItem, notes?: string) => {
-    if (!user) {
-      showToast('Please login to add items to cart');
-      navigate('/auth/login');
-      return;
-    }
-
-    // Check if trying to add from different restaurant
-    if (backendCart && backendCart.restaurant_id !== id) {
-      const confirmSwitch = window.confirm(
-        'Your cart contains items from another restaurant. Do you want to clear it and start a new cart?'
-      );
-      if (!confirmSwitch) return;
-      await clearCartMutation.mutateAsync(backendCart._id);
-    }
-
-    try {
-      let cartId = backendCart?._id;
-
-      // Create cart if doesn't exist
-      if (!cartId) {
-        const newCart = await createCartMutation.mutateAsync();
-        cartId = newCart._id;
-      }
-
-      // Check if item already exists
-      const existingItem = localCart.find(cartItem => cartItem._id === item._id);
-      
-      if (existingItem) {
-        // Update quantity
-        await updateQuantityMutation.mutateAsync({
-          cartId: cartId!,
-          menuId: item._id,
-          quantity: existingItem.quantity + 1,
-        });
-        
-        // Update local state
-        setLocalCart(prevCart =>
-          prevCart.map(cartItem =>
-            cartItem._id === item._id
-              ? { ...cartItem, quantity: cartItem.quantity + 1 }
-              : cartItem
-          )
-        );
-      } else {
-        // Add new item
-        await addItemMutation.mutateAsync({ cartId: cartId!, item, notes });
-        
-        // Update local state
-        setLocalCart(prevCart => [...prevCart, { ...item, quantity: 1, notes }]);
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-    }
-  };
-
-  const removeFromCart = async (itemId: string) => {
-    if (!backendCart) return;
-
-    const existingItem = localCart.find(cartItem => cartItem._id === itemId);
-    if (!existingItem) return;
-
-    try {
-      if (existingItem.quantity > 1) {
-        // Decrease quantity
-        await updateQuantityMutation.mutateAsync({
-          cartId: backendCart._id,
-          menuId: itemId,
-          quantity: existingItem.quantity - 1,
-        });
-        
-        setLocalCart(prevCart =>
-          prevCart.map(cartItem =>
-            cartItem._id === itemId
-              ? { ...cartItem, quantity: cartItem.quantity - 1 }
-              : cartItem
-          )
-        );
-      } else {
-        // Remove item completely
-        await removeItemMutation.mutateAsync({
-          cartId: backendCart._id,
-          menuId: itemId,
-        });
-        
-        setLocalCart(prevCart => prevCart.filter(cartItem => cartItem._id !== itemId));
-      }
-    } catch (error) {
-      console.error('Error removing from cart:', error);
-    }
-  };
-
-  const getItemQuantity = (itemId: string) => {
-    const item = localCart.find(cartItem => cartItem._id === itemId);
-    return item ? item.quantity : 0;
-  };
-
-  const cartTotal = useMemo(() => {
-    return localCart.reduce((total, item) => total + (item.price * item.quantity), 0);
-  }, [localCart]);
-
-  const cartItemsCount = useMemo(() => {
-    return localCart.reduce((total, item) => total + item.quantity, 0);
-  }, [localCart]);
-
-  const handleCheckout = () => {
-    if (!user) {
-      showToast('Please login to proceed');
-      navigate('/auth/login');
-      return;
-    }
-
-    if (cartItemsCount === 0) {
-      showToast('Your cart is empty');
-      return;
-    }
-
-    // Update cart status to checkout
-    if (backendCart) {
-      axiosSecure.patch(`/carts/${backendCart._id}/status`, { status: 'checkout' })
-        .then(() => {
-          navigate('/checkout', { state: { cartId: backendCart._id, restaurantId: id } });
-        })
-        .catch((error) => {
-          console.error('Checkout error:', error);
-          showToast('Failed to proceed to checkout');
-        });
-    }
+  const removeFromCart = (itemId: string) => {
+    removeFromCartGlobal(itemId);
   };
 
   // Share functionality
@@ -400,7 +149,7 @@ const RestaurantDetails: React.FC = () => {
   if (restaurantLoading || menuLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="loading loading-spinner loading-lg text-primary"></div>
+        <div className="loading loading-spinner loading-lg" style={{ color: '#EF451C' }}></div>
       </div>
     );
   }
@@ -412,7 +161,8 @@ const RestaurantDetails: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Restaurant not found</h2>
           <button
             onClick={() => navigate('/restaurants')}
-            className="text-primary hover:underline"
+            className="hover:underline"
+            style={{ color: '#EF451C' }}
           >
             Back to Restaurants
           </button>
@@ -432,11 +182,11 @@ const RestaurantDetails: React.FC = () => {
       <div className="bg-white border-b">
         <PageContainer className="py-3">
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <button onClick={() => navigate('/')} className="hover:text-primary">
+            <button onClick={() => navigate('/')} className="hover:opacity-80 transition-opacity" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = '#EF451C'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>
               Home
             </button>
             <ChevronRight size={16} />
-            <button onClick={() => navigate('/restaurants')} className="hover:text-primary">
+            <button onClick={() => navigate('/restaurants')} className="hover:opacity-80 transition-opacity" style={{ color: 'inherit' }} onMouseEnter={(e) => e.currentTarget.style.color = '#EF451C'} onMouseLeave={(e) => e.currentTarget.style.color = 'inherit'}>
               Restaurant List
             </button>
             <ChevronRight size={16} />
@@ -476,7 +226,7 @@ const RestaurantDetails: React.FC = () => {
                 </p>
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
-                    <Star size={16} className="fill-primary text-primary" />
+                    <Star size={16} style={{ fill: '#EF451C', color: '#EF451C' }} />
                     <span className="font-semibold text-dark-title">{restaurant.rating?.toFixed(1) || '0.0'}</span>
                     <span>({(restaurant.total_reviews || restaurant.total_ratings || 0)}+)</span>
                   </div>
@@ -567,7 +317,7 @@ const RestaurantDetails: React.FC = () => {
               >
                 {category}
                 {selectedCategory === category && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: '#EF451C' }}></div>
                 )}
               </button>
             ))}
@@ -697,16 +447,17 @@ const RestaurantDetails: React.FC = () => {
                                     }
                                   }}
                                   disabled={!item.is_available}
-                                  className={`px-4 py-2 rounded-lg font-semibold text-sm ${
+                                  style={item.is_available ? { backgroundColor: '#EF451C' } : {}}
+                                  className={`cursor-pointer px-4 py-2 rounded-lg font-semibold text-sm ${
                                     item.is_available
-                                      ? 'bg-primary text-white hover:bg-primary/90'
+                                      ? 'text-white hover:opacity-90'
                                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                   }`}
                                 >
                                   {item.is_available ? 'Add' : 'Unavailable'}
                                 </button>
                               ) : (
-                                <div className="flex items-center gap-2 bg-primary text-white rounded-full px-3 py-1 w-fit">
+                                <div className="flex items-center gap-2 text-white rounded-full px-3 py-1 w-fit" style={{ backgroundColor: '#EF451C' }}>
                                   <button
                                     onClick={() => removeFromCart(item._id)}
                                     className="hover:scale-110 transition-transform"
@@ -764,7 +515,7 @@ const RestaurantDetails: React.FC = () => {
                 <div className="space-y-4">
                   {/* Address */}
                   <div className="flex items-start gap-3">
-                    <MapPin size={18} className="text-primary flex-shrink-0 mt-1" />
+                    <MapPin size={18} className="flex-shrink-0 mt-1" style={{ color: '#EF451C' }} />
                     <div>
                       <p className="font-semibold text-gray-800 mb-1 text-sm">Address</p>
                       <p className="text-sm text-gray-600 leading-relaxed">
@@ -784,12 +535,13 @@ const RestaurantDetails: React.FC = () => {
 
                   {/* Phone */}
                   <div className="flex items-start gap-3">
-                    <Phone size={18} className="text-primary flex-shrink-0 mt-1" />
+                    <Phone size={18} className="flex-shrink-0 mt-1" style={{ color: '#EF451C' }} />
                     <div>
                       <p className="font-semibold text-gray-800 mb-1 text-sm">Phone</p>
                       <a
                         href={`tel:${restaurant.phone || ''}`}
-                        className="text-sm text-primary hover:underline"
+                        className="text-sm hover:underline"
+                        style={{ color: '#EF451C' }}
                       >
                         {restaurant.phone || 'N/A'}
                       </a>
@@ -821,137 +573,9 @@ const RestaurantDetails: React.FC = () => {
         </PageContainer>
       </div>
 
-      {/* Floating Cart Button */}
-      {cartItemsCount > 0 && (
-        <button
-          onClick={() => setIsCartOpen(true)}
-          className="fixed bottom-6 right-6 bg-primary text-white px-6 py-4 rounded-full shadow-2xl hover:scale-105 transition-transform flex items-center gap-3 z-50"
-        >
-          <ShoppingCart size={24} />
-          <span className="font-bold text-lg">{cartItemsCount} items</span>
-          <span className="font-bold text-lg">৳{cartTotal}</span>
-        </button>
-      )}
-
-      {/* Cart Modal */}
-      {isCartOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            {/* Cart Header */}
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-dark-title">Your Cart</h2>
-              <button
-                onClick={() => setIsCartOpen(false)}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            {/* Cart Items */}
-            <div className="flex-1 overflow-y-auto p-6">
-              {localCart.length === 0 ? (
-                <div className="text-center py-12">
-                  <ShoppingCart size={64} className="mx-auto text-gray-300 mb-4" />
-                  <p className="text-gray-500 text-lg">Your cart is empty</p>
-                  <p className="text-gray-400 text-sm mt-2">Add items from the menu</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {localCart.map((item) => (
-                    <div
-                      key={item._id}
-                      className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg"
-                    >
-                      {item.image && (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-20 h-20 object-cover rounded-lg"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <h4 className="font-bold text-gray-800 mb-1">{item.name}</h4>
-                        <p className="text-primary font-semibold">৳{item.price}</p>
-                        {item.notes && (
-                          <p className="text-xs text-gray-500 mt-1">Note: {item.notes}</p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 bg-white rounded-lg px-3 py-2 border border-gray-200">
-                        <button
-                          onClick={() => removeFromCart(item._id)}
-                          className="text-primary hover:scale-110 transition-transform"
-                        >
-                          <Minus size={18} />
-                        </button>
-                        <span className="font-bold min-w-[20px] text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => addToCart(item)}
-                          className="text-primary hover:scale-110 transition-transform"
-                        >
-                          <Plus size={18} />
-                        </button>
-                      </div>
-                      <p className="font-bold text-gray-800 w-20 text-right">
-                        ৳{item.price * item.quantity}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Cart Footer */}
-            <div className="p-6 border-t border-gray-200 bg-gray-50">
-              <div className="space-y-3 mb-4">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
-                  <span className="font-semibold">৳{cartTotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Delivery Fee</span>
-                  <span className="font-semibold">৳{(restaurant?.delivery_fee || 0).toFixed(2)}</span>
-                </div>
-                {restaurant?.minimum_order && cartTotal < restaurant.minimum_order && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <p className="text-xs text-yellow-800">
-                      <AlertCircle size={14} className="inline mr-1" />
-                      Minimum order: ৳{restaurant.minimum_order} (Add ৳{(restaurant.minimum_order - cartTotal).toFixed(2)} more)
-                    </p>
-                  </div>
-                )}
-                <div className="flex justify-between text-xl font-bold text-dark-title pt-3 border-t border-gray-300">
-                  <span>Total</span>
-                  <span className="text-primary">৳{(cartTotal + (restaurant?.delivery_fee ?? 0)).toFixed(2)}</span>
-                </div>
-              </div>
-              <button 
-                onClick={handleCheckout}
-                disabled={cartItemsCount === 0 || (restaurant?.minimum_order ? cartTotal < restaurant.minimum_order : false)}
-                className="w-full bg-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-primary/90 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                {cartItemsCount === 0 ? 'Cart is Empty' : 'Proceed to Checkout'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Success Toast */}
-      {showSuccessToast && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
-          <div className="bg-green-600 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3">
-            <Check size={24} />
-            <span className="font-semibold">{toastMessage}</span>
-          </div>
-        </div>
-      )}
-
       {/* Item Customization Modal */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col">
             {/* Modal Header */}
             <div className="relative">
@@ -976,7 +600,7 @@ const RestaurantDetails: React.FC = () => {
             {/* Modal Content */}
             <div className="p-6 flex-1 overflow-y-auto">
               <h3 className="text-2xl font-bold text-dark-title mb-2">{selectedItem.name}</h3>
-              <p className="text-xl text-primary font-bold mb-4">৳{selectedItem.price}</p>
+              <p className="text-xl font-bold mb-4" style={{ color: '#EF451C' }}>৳{selectedItem.price}</p>
               
               {selectedItem.description && (
                 <p className="text-gray-600 mb-4">{selectedItem.description}</p>
@@ -1069,7 +693,8 @@ const RestaurantDetails: React.FC = () => {
                   setItemNotes('');
                 }}
                 disabled={!selectedItem.is_available}
-                className="w-full bg-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-primary/90 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                style={!selectedItem.is_available ? {} : { backgroundColor: '#EF451C' }}
+                className="w-full text-white py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-opacity disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer"
               >
                 {selectedItem.is_available ? `Add to Cart - ৳${selectedItem.price}` : 'Not Available'}
               </button>
