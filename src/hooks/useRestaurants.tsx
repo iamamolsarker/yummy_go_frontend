@@ -53,16 +53,16 @@ const useRestaurants = (options?: UseRestaurantsOptions) => {
     queryKey: ['restaurants', options],
     queryFn: async () => {
       try {
-        let url = 'api/restaurants';
+        let url = '/restaurants';
         const params = new URLSearchParams();
 
         if (options?.search) {
           params.append('search', options.search);
-          url = 'api/restaurants/search';
+          url = '/restaurants/search';
         }
 
         if (options?.status) {
-          url = `api/restaurants/status/${options.status}`;
+          url = `/restaurants/status/${options.status}`;
         }
 
         const queryString = params.toString();

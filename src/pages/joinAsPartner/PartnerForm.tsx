@@ -63,7 +63,7 @@ const PartnerForm: React.FC = () => {
 
       // 4. Send the partner's information to your backend via API
       // ✅ FIX: Added '/api' prefix to construct the correct URL without changing useAxios hook.
-      await axiosPublic.post("/api/users", partnerInfo);
+      await axiosPublic.post("/users", partnerInfo);
       
       toast.success(`Welcome, ${data.ownerName}! Your partner application has been submitted.`);
       

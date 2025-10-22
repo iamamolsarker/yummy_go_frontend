@@ -23,15 +23,15 @@ import RiderEarnings from "../Dashboard/Rider/RiderEarnings";
 import RiderRoutes from "../Dashboard/Rider/RiderRoutes";
 import RiderPerformance from "../Dashboard/Rider/RiderPerformance";
 import SettingsPage from "../pages/profilePage/SettingsPage";
-
-import Checkout from "../pages/checkout/Checkout";
-import OrderConfirmation from "../pages/order-confirmation/OrderConfirmation";
 import Restaurants from "../pages/Restaurants/Restaurants";
 import RestaurantDetails from "../pages/Restaurants/RestaurantDetails";
+import Checkout from "../pages/checkout/Checkout";
+import OrderConfirmation from "../pages/order-confirmation/OrderConfirmation";
 import Analytics from "../Dashboard/Admin/Analytics/Analytics";
 import Reports from "../Dashboard/Admin/Reports/Reports";
 import MenuManagement from "../Dashboard/Restaurant_Owner/MenuManagement/MenuManagement";
 import OrdersPageWithDelivery from "../Dashboard/Restaurant_Owner/OrdersManagements/Orders";
+
 
 
 
