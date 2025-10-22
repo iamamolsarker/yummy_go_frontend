@@ -23,17 +23,15 @@ import RiderEarnings from "../Dashboard/Rider/RiderEarnings";
 import RiderRoutes from "../Dashboard/Rider/RiderRoutes";
 import RiderPerformance from "../Dashboard/Rider/RiderPerformance";
 import SettingsPage from "../pages/profilePage/SettingsPage";
-import Restaurants from "../pages/restaurants/Restaurants";
-import RestaurantDetails from "../pages/restaurants/RestaurantDetails";
-import Analytics from "../Dashboard/Admin/Analytics/analytics";
-import Reports from "../Dashboard/Admin/Reports/reports";
-import MenuManagement from "../Dashboard/Restaurant_Owner/MenuManagement/MenuManagement";
+
+import Checkout from "../pages/checkout/Checkout";
+import OrderConfirmation from "../pages/order-confirmation/OrderConfirmation";
 import Restaurants from "../pages/Restaurants/Restaurants";
 import RestaurantDetails from "../pages/Restaurants/RestaurantDetails";
 import Analytics from "../Dashboard/Admin/Analytics/Analytics";
 import Reports from "../Dashboard/Admin/Reports/Reports";
-import Checkout from "../pages/checkout/Checkout";
-import OrderConfirmation from "../pages/order-confirmation/OrderConfirmation";
+import MenuManagement from "../Dashboard/Restaurant_Owner/MenuManagement/MenuManagement";
+import OrdersPageWithDelivery from "../Dashboard/Restaurant_Owner/OrdersManagements/Orders";
 
 
 
@@ -157,7 +155,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "restaurant/menu",
-        element: <MenuManagement></MenuManagement>
+        element: <MenuManagement />
+      },
+      {
+        path: "restaurant/orders",
+        element: <OrdersPageWithDelivery></OrdersPageWithDelivery>
       }
 
     ]
