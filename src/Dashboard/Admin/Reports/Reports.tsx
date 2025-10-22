@@ -183,18 +183,18 @@ const Reports = () => {
 
                     <div id="print-section">
                         {isError && (
-                             <div className="flex flex-col justify-center items-center text-center bg-red-50 p-6 rounded-lg">
+                            <div className="flex flex-col justify-center items-center text-center bg-red-50 p-6 rounded-lg">
                                 <ServerCrash className="text-red-500 mb-4" size={48} />
                                 <h2 className="text-2xl font-bold mb-2 text-red-700">Failed to Generate Report</h2>
                                 <p className="text-gray-500 max-w-md">{(error as any)?.message || 'An unknown error occurred.'}</p>
                             </div>
                         )}
-                        
+
                         {!enabled && !isLoading && !isError && (
-                             <div className="text-center py-20 bg-white rounded-lg border-2 border-dashed">
-                                 <Calendar size={48} className="mx-auto text-gray-400" />
-                                 <p className="mt-4 text-gray-500">Select a report type and date range to get started.</p>
-                             </div>
+                            <div className="text-center py-20 bg-white rounded-lg border-2 border-dashed">
+                                <Calendar size={48} className="mx-auto text-gray-400" />
+                                <p className="mt-4 text-gray-500">Select a report type and date range to get started.</p>
+                            </div>
                         )}
 
                         {reportData && !isLoading && !isError && (
@@ -221,7 +221,7 @@ const Reports = () => {
                                         <SummaryCard key={key} title={key.replace(/_/g, ' ')} value={value} />
                                     ))}
                                 </div>
-                                
+
                                 <div className="overflow-x-auto">
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">

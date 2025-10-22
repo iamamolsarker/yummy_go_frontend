@@ -40,7 +40,7 @@ const SocialLogin: React.FC = () => {
         };
 
         try {
-          const userRes = await axiosPublic.post("/api/users", userInfo);
+          const userRes = await axiosPublic.post("/users", userInfo);
           console.log("User saved/retrieved from DB:", userRes.data);
         } catch (dbError: any) {
           // It's okay if the user already exists (often a 400 Bad Request)

@@ -25,8 +25,8 @@ import RiderPerformance from "../Dashboard/Rider/RiderPerformance";
 import SettingsPage from "../pages/profilePage/SettingsPage";
 import Restaurants from "../pages/restaurants/Restaurants";
 import RestaurantDetails from "../pages/restaurants/RestaurantDetails";
-import Analytics from "../Dashboard/Admin/Analytics/analytics";
-import Reports from "../Dashboard/Admin/Reports/reports";
+import Analytics from "../Dashboard/Admin/Analytics/Analytics";
+import Reports from "../Dashboard/Admin/Reports/Reports";
 
 
 
