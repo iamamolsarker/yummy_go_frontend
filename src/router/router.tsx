@@ -25,8 +25,12 @@ import RiderPerformance from "../Dashboard/Rider/RiderPerformance";
 import SettingsPage from "../pages/profilePage/SettingsPage";
 import Restaurants from "../pages/restaurants/Restaurants";
 import RestaurantDetails from "../pages/restaurants/RestaurantDetails";
+import OrderConfirmation from "../pages/order-confirmation/OrderConfirmation";
+import Checkout from "../pages/checkout/Checkout";
 import Analytics from "../Dashboard/Admin/Analytics/Analytics";
 import Reports from "../Dashboard/Admin/Reports/Reports";
+import MenuManagement from "../Dashboard/Restaurant_Owner/MenuManagement/MenuManagement";
+
 
 
 
@@ -71,6 +75,22 @@ export const router = createBrowserRouter([
       {
         path: "restaurants/:id",
         element: <RestaurantDetails />
+      },
+      {
+        path: "checkout",
+        element: (
+          <PrivateRoute>
+            <Checkout />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: "order-confirmation/:orderId",
+        element: (
+          <PrivateRoute>
+            <OrderConfirmation />
+          </PrivateRoute>
+        )
       },
 
     ]
@@ -131,6 +151,10 @@ export const router = createBrowserRouter([
         path: "rider/performance",
         element: <RiderPerformance />
       },
+      {
+        path: "restaurant/menu",
+        element: <MenuManagement></MenuManagement>
+      }
 
     ]
   },

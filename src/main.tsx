@@ -37,7 +37,6 @@ createRoot(document.getElementById('root')!).render(
           draggable
           theme="colored"
         />
-
       </AuthProvider>
       {/* React Query DevTools */}
       <ReactQueryDevtools initialIsOpen={false} />
