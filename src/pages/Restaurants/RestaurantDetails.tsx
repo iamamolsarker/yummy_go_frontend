@@ -49,7 +49,7 @@ const RestaurantDetails: React.FC = () => {
   const { data: restaurant, isLoading: restaurantLoading } = useQuery<Restaurant>({
     queryKey: ['restaurant', id],
     queryFn: async () => {
-      const response = await axios.get(`/api/restaurants/${id}`);
+      const response = await axios.get(`/restaurants/${id}`);
       return response.data.data;
     },
     enabled: !!id,
@@ -60,7 +60,7 @@ const RestaurantDetails: React.FC = () => {
     queryKey: ['menu', id],
     queryFn: async () => {
       try {
-        const response = await axios.get(`/api/restaurants/${id}/menus`);
+        const response = await axios.get(`/restaurants/${id}/menus`);
         return response.data.data || [];
       } catch {
         console.warn('Menu endpoint not available, using empty menu');

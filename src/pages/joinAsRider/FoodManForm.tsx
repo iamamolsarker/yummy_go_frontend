@@ -116,7 +116,7 @@ const FoodManForm: React.FC = () => {
           } : null,
         },
       };
-      await axiosPublic.post("/api/users", riderInfo);
+      await axiosPublic.post("/users", riderInfo);
       toast.success(`Welcome, ${fullName}! Your rider application has been submitted.`);
       navigate("/");
     } catch (err: any) {
