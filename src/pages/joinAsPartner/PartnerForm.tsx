@@ -19,6 +19,7 @@ import {
 import useAuth from "../../hooks/useAuth";
 import useAxios from "../../hooks/useAxios";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import useUserRole from "../../hooks/useUserRole";
 
 // Define the type for our form data
 type PartnerFormData = {
@@ -35,6 +36,7 @@ const PartnerForm: React.FC = () => {
   const { user, createUser, updateUser, loading, setLoading } = useAuth();
   const axiosPublic = useAxios();
   const axiosSecure = useAxiosSecure();
+  const { isRestaurantOwner } = useUserRole();
   const {
     register,
     handleSubmit,
@@ -43,6 +45,17 @@ const PartnerForm: React.FC = () => {
   } = useForm<PartnerFormData>();
 
   const [showPassword, setShowPassword] = useState(false);
+
+  
+  // Show warning if logged-in user is already a restaurant owner
+  useEffect(() => {
+    if (user && isRestaurantOwner) {
+      toast.warning("You are already registered as a restaurant owner.");
+      navigate("/");
+    }
+  }, [user, isRestaurantOwner, navigate]);
+  
+
 
   // Auto-fill form if user is logged in
   useEffect(() => {
