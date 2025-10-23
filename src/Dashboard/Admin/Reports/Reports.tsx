@@ -49,7 +49,7 @@ const ReportControl = ({ children }: { children: React.ReactNode }) => (
     </div>
 );
 
-const SummaryCard = ({ title, value, format = 'number' }: { title: string, value: string | number }) => {
+const SummaryCard = ({ title, value, format = 'number' }: { title: string, value: string | number, format?: 'number' | 'currency' }) => {
     const formattedValue = format === 'currency' ? `৳${Number(value).toLocaleString('en-IN')}` : Number(value).toLocaleString('en-IN');
     return (
         <div className="bg-gray-50 p-4 rounded-lg border">

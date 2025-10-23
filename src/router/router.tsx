@@ -36,11 +36,11 @@ import OrdersPageWithDelivery from "../Dashboard/Restaurant_Owner/OrdersManageme
 
 
 
-
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayOut />,
+    errorElement: <Error />,
     children: [
       {
         index: true,

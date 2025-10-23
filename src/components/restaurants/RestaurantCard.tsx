@@ -18,8 +18,15 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
     ? `${restaurant.delivery_time.min} - ${restaurant.delivery_time.max} min`
     : '20 - 35 min';
   
-  // Get cuisine types
-  const cuisineDisplay = (restaurant.cuisine || restaurant.cuisine_types)?.join(', ') || 'Restaurant';
+  // Get cuisine types - handle both array and string
+  const getCuisineDisplay = () => {
+    const cuisine = restaurant.cuisine || restaurant.cuisine_types;
+    if (!cuisine) return 'Restaurant';
+    if (Array.isArray(cuisine)) return cuisine.join(', ');
+    if (typeof cuisine === 'string') return cuisine;
+    return 'Restaurant';
+  };
+  const cuisineDisplay = getCuisineDisplay();
   
   // Get opening time for closed restaurants
   const getOpeningTime = () => {
