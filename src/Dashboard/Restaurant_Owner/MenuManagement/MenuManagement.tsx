@@ -83,6 +83,8 @@ type NewMenuItem = {
   is_available?: boolean;
   is_featured?: boolean;
   preparation_time?: string;
+  rating?: number;
+  total_reviews?: number;
 };
 
 /* ---------- Component ---------- */
@@ -101,6 +103,8 @@ const MenuManagement: React.FC = () => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [uploading, setUploading] = useState<boolean>(false);
   const [editing, setEditing] = useState<MenuItem | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+
 
   const [search, setSearch] = useState<string>("");
 
@@ -157,8 +161,8 @@ const MenuManagement: React.FC = () => {
         const finalMenus = Array.isArray(payload)
           ? payload
           : Array.isArray(payload?.data)
-          ? payload.data
-          : [];
+            ? payload.data
+            : [];
 
         if (!mounted) return;
         // defensive: ensure numeric price and default flags
@@ -267,18 +271,16 @@ const MenuManagement: React.FC = () => {
       if (editing) {
         // update
         const res = await axiosSecure.patch(`/restaurants/${restaurant._id}/menus/${editing._id}`, payload);
-        // result may be updateOne result; backend may not return updated document
-        const resData = res?.data ?? res;
-        // best-effort: merge locally
+
         setMenus((prev) =>
           prev.map((m) =>
             m._id === editing._id
               ? {
-                  ...(m as MenuItem),
-                  ...payload,
-                  image: payload.image ?? m.image,
-                  updated_at: new Date().toISOString(),
-                }
+                ...m,
+                ...payload,
+                image: payload.image ?? m.image,
+                updated_at: new Date().toISOString(),
+              }
               : m
           )
         );
@@ -290,45 +292,33 @@ const MenuManagement: React.FC = () => {
           restaurant_id: restaurant._id,
         });
 
-        // Backend create returns insertOne result or possibly { success: true, data: {...} }
         const resData = res?.data ?? res;
 
-        // Build new local menu object for immediate UI update
-        let newMenu: MenuItem;
-        if (resData?.insertedId) {
-          newMenu = {
-            _id: String(resData.insertedId),
-            restaurant_id: restaurant._id,
-            ...payload,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          } as MenuItem;
-        } else if (resData?.data && typeof resData.data === "object") {
-          // if server returns created doc in data
-          newMenu = {
-            ...(resData.data as any),
-            price: Number(resData.data.price ?? payload.price),
-            image: resData.data.image ?? payload.image,
-          } as MenuItem;
-        } else if (resData?._id) {
-          // maybe server returned the doc
-          newMenu = {
-            ...(resData as any),
-            price: Number(resData.price ?? payload.price),
-            image: resData.image ?? payload.image,
-          } as MenuItem;
-        } else {
-          // fallback synthetic
-          newMenu = {
-            _id: String(Date.now()),
-            restaurant_id: restaurant._id,
-            ...payload,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          } as MenuItem;
-        }
+        // normalize new menu to match table shape
+        const normalizedNewMenu: MenuItem = {
+          _id: resData?.insertedId ? String(resData.insertedId) : String(Date.now()),
+          restaurant_id: restaurant._id,
+          name: payload.name,
+          description: payload.description ?? null,
+          price: Number(payload.price ?? 0),
+          category: payload.category ?? "main_course",
+          image: payload.image ?? null,
+          ingredients: Array.isArray(payload.ingredients) ? payload.ingredients : [],
+          allergens: Array.isArray(payload.allergens) ? payload.allergens : [],
+          nutrition: payload.nutrition ?? { calories: null, protein: null, carbs: null, fat: null },
+          is_vegetarian: !!payload.is_vegetarian,
+          is_vegan: !!payload.is_vegan,
+          is_halal: payload.is_halal === undefined ? true : !!payload.is_halal,
+          is_available: payload.is_available === undefined ? true : !!payload.is_available,
+          is_featured: !!payload.is_featured,
+          preparation_time: payload.preparation_time ?? "15-20 mins",
+          rating: 0,
+          total_reviews: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
 
-        setMenus((prev) => [newMenu, ...prev]);
+        setMenus((prev) => [normalizedNewMenu, ...prev]);
         toast.success("Menu added successfully");
       }
 
@@ -358,6 +348,7 @@ const MenuManagement: React.FC = () => {
       setSubmitting(false);
     }
   };
+
 
   /* ---------------- Delete (soft delete via backend) ---------------- */
   const handleDelete = async (menuId: string) => {
@@ -518,118 +509,181 @@ const MenuManagement: React.FC = () => {
       {/* ---------- Modal: Add / Edit ---------- */}
       <AnimatePresence>
         {showModal && (
-          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <motion.div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6"
-              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}>
-              <div className="flex items-start justify-between gap-4">
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] overflow-y-auto p-6"
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="text-2xl font-bold text-gray-800">{editing ? "Edit Menu Item" : "Add Menu Item"}</h3>
-                  <p className="text-sm text-gray-500 mt-1">Fill the details below and save. Images upload to ImgBB and are saved as <code>image</code>.</p>
+                  <p className="text-sm text-gray-500 mt-1">Fill in the details and save your menu item.</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => { setShowModal(false); setEditing(null); }} className="text-gray-500 hover:text-gray-700">
-                    <X />
-                  </button>
-                </div>
+                <button onClick={() => { setShowModal(false); setEditing(null); }} className="text-gray-500 hover:text-gray-700">
+                  <X />
+                </button>
               </div>
 
-              <form onSubmit={handleSubmitMenu} className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Left column - main details */}
+              {/* Form */}
+              <form onSubmit={handleSubmitMenu} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+                {/* Left Column */}
                 <div className="space-y-3">
-                  <label className="block text-sm text-gray-600">Name</label>
-                  <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full border p-3 rounded-lg" />
+                  <input
+                    required
+                    placeholder="Name"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="w-full border p-3 rounded-lg"
+                  />
 
-                  <label className="block text-sm text-gray-600">Category</label>
-                  <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full border p-3 rounded-lg">
-                    <option value="appetizer">Appetizer</option>
-                    <option value="main_course">Main Course</option>
-                    <option value="dessert">Dessert</option>
-                    <option value="beverage">Beverage</option>
-                    <option value="side">Side</option>
-                  </select>
+                  {/* Category Radio */}
+                  <div className="flex gap-3 flex-wrap">
+                    {["Appetizer", "Main Course", "Dessert", "Beverage", "Side"].map(cat => (
+                      <label key={cat} className="flex items-center gap-2 text-sm">
+                        <input
+                          type="radio"
+                          value={cat.toLowerCase().replace(" ", "_")}
+                          checked={form.category === cat.toLowerCase().replace(" ", "_")}
+                          onChange={(e) => setForm({ ...form, category: e.target.value })}
+                          className="accent-[#EF451C]"
+                        />
+                        {cat}
+                      </label>
+                    ))}
+                  </div>
 
-                  <label className="block text-sm text-gray-600">Price (BDT)</label>
-                  <input required type="number" step="0.01" value={String(form.price)} onChange={(e) => setForm({ ...form, price: Number(e.target.value || 0) })} className="w-full border p-3 rounded-lg" />
+                  <input
+                    required
+                    type="number" step="0.01"
+                    placeholder="Price (BDT)"
+                    value={String(form.price)}
+                    onChange={(e) => setForm({ ...form, price: Number(e.target.value || 0) })}
+                    className="w-full border p-3 rounded-lg"
+                  />
 
-                  <label className="block text-sm text-gray-600">Description</label>
-                  <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={4} className="w-full border p-3 rounded-lg" />
+                  <textarea
+                    placeholder="Description"
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    rows={3}
+                    className="w-full border p-3 rounded-lg"
+                  />
 
-                  <label className="block text-sm text-gray-600">Preparation time</label>
-                  <input value={form.preparation_time} onChange={(e) => setForm({ ...form, preparation_time: e.target.value })} className="w-full border p-3 rounded-lg" />
+                  <input
+                    placeholder="Preparation time (e.g., 15-20 mins)"
+                    value={form.preparation_time}
+                    onChange={(e) => setForm({ ...form, preparation_time: e.target.value })}
+                    className="w-full border p-3 rounded-lg"
+                  />
                 </div>
 
-                {/* Right column - advanced & image */}
+                {/* Right Column */}
                 <div className="space-y-3">
+                  {/* Image */}
                   <div>
-                    <label className="block text-sm text-gray-600 mb-2">Image (ImgBB)</label>
-                    <div className="flex gap-2 items-center">
-                      <input type="file" accept="image/*" onChange={handleImageUpload} className="border p-2 rounded-lg" />
-                      {uploading && <div className="text-sm text-gray-500">Uploading...</div>}
-                    </div>
+                    <label className="block text-sm text-gray-600 mb-1">Image</label>
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="border p-2 rounded-lg w-full" />
+                    {uploading && <div className="text-sm text-gray-500 mt-1">Uploading...</div>}
                     {form.image && <img src={form.image} alt="preview" className="mt-3 w-40 h-40 object-cover rounded-lg border" />}
                   </div>
 
-                  <div>
-                    <label className="block text-sm text-gray-600">Ingredients (comma separated)</label>
-                    <input value={(form.ingredients ?? []).join(", ")} onChange={(e) => setForm({ ...form, ingredients: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })} className="w-full border p-3 rounded-lg" />
+                  {/* Ingredients */}
+                  <textarea
+                    placeholder="Ingredients (one per line)"
+                    value={(form.ingredients ?? []).join("\n")}
+                    onChange={(e) => setForm({ ...form, ingredients: e.target.value.split("\n").map(s => s.trim()).filter(Boolean) })}
+                    className="w-full border p-3 rounded-lg h-24 resize-none"
+                  />
+
+                  {/* Show Advanced toggle */}
+                  <div className="flex items-center gap-2 mt-2">
+                    <input
+                      type="checkbox"
+                      checked={showAdvanced}
+                      onChange={(e) => setShowAdvanced(e.target.checked)}
+                      id="toggle-advanced"
+                      className="accent-[#EF451C]"
+                    />
+                    <label htmlFor="toggle-advanced" className="text-sm text-gray-600 cursor-pointer">Show Advanced (Nutrition)</label>
                   </div>
 
-                  <div>
-                    <label className="block text-sm text-gray-600">Allergens (comma separated)</label>
-                    <input value={(form.allergens ?? []).join(", ")} onChange={(e) => setForm({ ...form, allergens: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })} className="w-full border p-3 rounded-lg" />
-                  </div>
+                  {/* Advanced nutrition fields */}
+                  {showAdvanced && (
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <div>
+                        <label className="block text-sm text-gray-600">Calories</label>
+                        <input
+                          value={form.nutrition?.calories ?? ""}
+                          onChange={(e) => setForm({ ...form, nutrition: { ...(form.nutrition ?? {}), calories: e.target.value ? Number(e.target.value) : null } })}
+                          className="w-full border p-2 rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600">Protein</label>
+                        <input
+                          value={form.nutrition?.protein ?? ""}
+                          onChange={(e) => setForm({ ...form, nutrition: { ...(form.nutrition ?? {}), protein: e.target.value ?? null } })}
+                          className="w-full border p-2 rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600">Carbs</label>
+                        <input
+                          value={form.nutrition?.carbs ?? ""}
+                          onChange={(e) => setForm({ ...form, nutrition: { ...(form.nutrition ?? {}), carbs: e.target.value ?? null } })}
+                          className="w-full border p-2 rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600">Fat</label>
+                        <input
+                          value={form.nutrition?.fat ?? ""}
+                          onChange={(e) => setForm({ ...form, nutrition: { ...(form.nutrition ?? {}), fat: e.target.value ?? null } })}
+                          className="w-full border p-2 rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  )}
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-sm text-gray-600">Calories</label>
-                      <input value={form.nutrition?.calories ?? ""} onChange={(e) => setForm({ ...form, nutrition: { ...(form.nutrition ?? {}), calories: e.target.value ? Number(e.target.value) : null } })} className="w-full border p-2 rounded-lg" />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-600">Protein</label>
-                      <input value={form.nutrition?.protein ?? ""} onChange={(e) => setForm({ ...form, nutrition: { ...(form.nutrition ?? {}), protein: e.target.value ?? null } })} className="w-full border p-2 rounded-lg" />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-600">Carbs</label>
-                      <input value={form.nutrition?.carbs ?? ""} onChange={(e) => setForm({ ...form, nutrition: { ...(form.nutrition ?? {}), carbs: e.target.value ?? null } })} className="w-full border p-2 rounded-lg" />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-600">Fat</label>
-                      <input value={form.nutrition?.fat ?? ""} onChange={(e) => setForm({ ...form, nutrition: { ...(form.nutrition ?? {}), fat: e.target.value ?? null } })} className="w-full border p-2 rounded-lg" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
+                  {/* Flags */}
+                  <div className="flex flex-wrap gap-3 mt-2">
                     <label className="flex items-center gap-2 text-sm">
-                      <input type="checkbox" checked={!!form.is_vegetarian} onChange={(e) => setForm({ ...form, is_vegetarian: e.target.checked })} /> Vegetarian
+                      <input type="checkbox" checked={!!form.is_vegetarian} onChange={(e) => setForm({ ...form, is_vegetarian: e.target.checked })} className="accent-[#EF451C]" /> Vegetarian
                     </label>
                     <label className="flex items-center gap-2 text-sm">
-                      <input type="checkbox" checked={!!form.is_vegan} onChange={(e) => setForm({ ...form, is_vegan: e.target.checked })} /> Vegan
+                      <input type="checkbox" checked={!!form.is_vegan} onChange={(e) => setForm({ ...form, is_vegan: e.target.checked })} className="accent-[#EF451C]" /> Vegan
                     </label>
                     <label className="flex items-center gap-2 text-sm">
-                      <input type="checkbox" checked={!!form.is_halal} onChange={(e) => setForm({ ...form, is_halal: e.target.checked })} /> Halal
+                      <input type="checkbox" checked={!!form.is_halal} onChange={(e) => setForm({ ...form, is_halal: e.target.checked })} className="accent-[#EF451C]" /> Halal
                     </label>
                     <label className="flex items-center gap-2 text-sm">
-                      <input type="checkbox" checked={!!form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} /> Featured
+                      <input type="checkbox" checked={!!form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} className="accent-[#EF451C]" /> Featured
                     </label>
-                    <label className="flex items-center gap-2 text-sm col-span-2">
-                      <input type="checkbox" checked={!!form.is_available} onChange={(e) => setForm({ ...form, is_available: e.target.checked })} /> Available
+                    <label className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={!!form.is_available} onChange={(e) => setForm({ ...form, is_available: e.target.checked })} className="accent-[#EF451C]" /> Available
                     </label>
                   </div>
                 </div>
 
-                {/* Full width footer controls */}
-                <div className="lg:col-span-2 flex items-center justify-end gap-3 mt-3">
+                {/* Footer buttons */}
+                <div className="lg:col-span-2 flex justify-end gap-3 mt-4">
                   <button type="button" onClick={() => { setShowModal(false); setEditing(null); }} className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">Cancel</button>
                   <button type="submit" disabled={submitting} className="px-5 py-2 bg-[#EF451C] text-white rounded-lg hover:bg-[#d63a13] flex items-center gap-2">
-                    {submitting ? <><Loader2 className="animate-spin w-4 h-4" /> Saving...</> : (editing ? "Update Menu" : "Add Menu")}
+                    {submitting ? <><Loader2 className="animate-spin w-4 h-4" /> Saving...</> : (editing ? "Update" : "Add")}
                   </button>
                 </div>
+
               </form>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 };
