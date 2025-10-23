@@ -63,7 +63,6 @@ const Dashboard: React.FC = () => {
   const { user } = useAuth(); // ✅ from your auth context
   const [loading, setLoading] = useState<boolean>(true);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
   const [summary, setSummary] = useState<Summary>({
     totalOrders: 0,
     activeOrders: 0,
@@ -91,7 +90,6 @@ const Dashboard: React.FC = () => {
         const { data: ordersData } = await axiosSecure.get<Order[]>(
           `/api/orders/restaurant/${restaurantData._id}`
         );
-        setOrders(ordersData);
 
         // 3️⃣ Calculate summary
         const totalOrders = ordersData.length;
@@ -229,7 +227,7 @@ const Dashboard: React.FC = () => {
 interface SummaryCardProps {
   title: string;
   value: string | number;
-  icon: JSX.Element;
+  icon: React.ReactElement;
 }
 
 const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon }) => (
