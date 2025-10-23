@@ -30,7 +30,7 @@ import OrderConfirmation from "../pages/order-confirmation/OrderConfirmation";
 import Analytics from "../Dashboard/Admin/Analytics/Analytics";
 import Reports from "../Dashboard/Admin/Reports/Reports";
 import MenuManagement from "../Dashboard/Restaurant_Owner/MenuManagement/MenuManagement";
-import OrdersPageWithDelivery from "../Dashboard/Restaurant_Owner/OrdersManagements/Orders";
+import RestaurantOrdersManagement from "../Dashboard/Restaurant_Owner/OrdersManagements/Orders";
 
 
 
@@ -159,7 +159,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "restaurant/orders",
-        element: <OrdersPageWithDelivery></OrdersPageWithDelivery>
+        element: <RestaurantOrdersManagement></RestaurantOrdersManagement>
       }
 
     ]
