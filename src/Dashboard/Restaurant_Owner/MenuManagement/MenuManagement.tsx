@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
@@ -10,334 +11,679 @@ import {
   Star,
   StarOff,
   X,
+  Upload,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import "react-toastify/dist/ReactToastify.css";
 
-// ===== Types =====
+/**
+ * MenuManagement
+ * - Full CRUD for restaurant menus
+ * - Image upload to imgbb -> stored as `image` in backend payload
+ * - Form includes extended fields to match your backend schema
+ * - Defensive handling of API shapes (data, { data: [...] }, insertOne result)
+ */
+
+/* ---------- Types ---------- */
 interface Restaurant {
   _id: string;
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
+  [k: string]: any;
 }
 
 interface MenuItem {
   _id: string;
+  restaurant_id?: string;
   name: string;
-  description: string;
+  description?: string | null;
   price: number;
-  category: string;
-  image_url?: string;
-  featured?: boolean;
+  category?: string;
+  image?: string | null;
+  ingredients?: string[];
+  allergens?: string[];
+  nutrition?: {
+    calories?: number | null;
+    protein?: string | null;
+    carbs?: string | null;
+    fat?: string | null;
+    [k: string]: any;
+  };
+  is_vegetarian?: boolean;
+  is_vegan?: boolean;
+  is_halal?: boolean;
+  is_available?: boolean;
+  is_featured?: boolean;
+  preparation_time?: string;
   rating?: number;
+  total_reviews?: number;
+  created_at?: string;
+  updated_at?: string;
+  // UI
+  isActionsOpen?: boolean;
 }
 
-interface NewMenuItem {
+type NewMenuItem = {
   name: string;
-  description: string;
+  description?: string;
   price: number;
-  category: string;
-  image_url?: string;
-}
+  category?: string;
+  image?: string | null;
+  ingredients?: string[]; // stored as array
+  allergens?: string[]; // stored as array
+  nutrition?: {
+    calories?: number | null;
+    protein?: string | null;
+    carbs?: string | null;
+    fat?: string | null;
+  };
+  is_vegetarian?: boolean;
+  is_vegan?: boolean;
+  is_halal?: boolean;
+  is_available?: boolean;
+  is_featured?: boolean;
+  preparation_time?: string;
+  rating?: number;
+  total_reviews?: number;
+};
 
+/* ---------- Component ---------- */
 const MenuManagement: React.FC = () => {
   const axiosSecure = useAxiosSecure();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+
+  // Data
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [menus, setMenus] = useState<MenuItem[]>([]);
+
+  // UI
   const [loading, setLoading] = useState<boolean>(true);
+  const [errorMsg, setErrorMsg] = useState<string>("");
   const [showModal, setShowModal] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [newItem, setNewItem] = useState<NewMenuItem>({
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [editing, setEditing] = useState<MenuItem | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+
+
+  const [search, setSearch] = useState<string>("");
+
+  // New / Edit form state
+  const [form, setForm] = useState<NewMenuItem>({
     name: "",
     description: "",
     price: 0,
-    category: "",
-    image_url: "",
+    category: "main_course",
+    image: null,
+    ingredients: [],
+    allergens: [],
+    nutrition: { calories: null, protein: null, carbs: null, fat: null },
+    is_vegetarian: false,
+    is_vegan: false,
+    is_halal: true,
+    is_available: true,
+    is_featured: false,
+    preparation_time: "15-20 mins",
   });
 
-  // Fetch menus
+  /* ---------------- Fetch menus when auth + user ready ---------------- */
   useEffect(() => {
+    if (authLoading) return;
+    if (!user?.email) {
+      setErrorMsg("Please log in to view menus.");
+      setLoading(false);
+      return;
+    }
+
+    let mounted = true;
     const fetchMenus = async () => {
-      if (!user?.email) return toast.error("User not found. Please log in again.");
       try {
-        const { data: restaurantData } = await axiosSecure.get<Restaurant>(
-          `/restaurants/email/${user.email}`
-        );
+        setLoading(true);
+        setErrorMsg("");
+
+        // fetch restaurant by email
+        const resRest = await axiosSecure.get(`/restaurants/email/${user.email}`);
+        // API may return either { success: true, data: {...} } or { ... } directly
+        const restaurantData = resRest?.data?.data ?? resRest?.data ?? null;
+
+        if (!restaurantData?._id) {
+          setErrorMsg("No restaurant found for this user.");
+          setLoading(false);
+          return;
+        }
+        if (!mounted) return;
         setRestaurant(restaurantData);
 
-        const { data: menusData } = await axiosSecure.get<MenuItem[]>(
-          `/restaurants/${restaurantData._id}/menus`
-        );
-        setMenus(menusData);
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to load menu data.");
+        // fetch menus for restaurant
+        const resMenus = await axiosSecure.get(`/restaurants/${restaurantData._id}/menus`);
+        // resMenus may be an array or { data: [...] } or { success: true, data: [...] }
+        const payload = resMenus?.data ?? resMenus;
+        const finalMenus = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+            ? payload.data
+            : [];
+
+        if (!mounted) return;
+        // defensive: ensure numeric price and default flags
+        const normalized = finalMenus.map((m: any) => ({
+          ...m,
+          price: typeof m.price === "string" ? Number(m.price) || 0 : m.price ?? 0,
+          image: m.image ?? null,
+          ingredients: Array.isArray(m.ingredients) ? m.ingredients : (m.ingredients ? [String(m.ingredients)] : []),
+          allergens: Array.isArray(m.allergens) ? m.allergens : (m.allergens ? [String(m.allergens)] : []),
+          nutrition: m.nutrition ?? { calories: null, protein: null, carbs: null, fat: null },
+          is_vegetarian: !!m.is_vegetarian,
+          is_vegan: !!m.is_vegan,
+          is_halal: m.is_halal === undefined ? true : !!m.is_halal,
+          is_available: m.is_available === undefined ? true : !!m.is_available,
+          is_featured: !!m.is_featured,
+        })) as MenuItem[];
+
+        setMenus(normalized);
+      } catch (err: any) {
+        console.error("Fetch menus failed:", err);
+        setErrorMsg("Failed to load menus.");
+        toast.error("Failed to load menus.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchMenus();
-  }, [axiosSecure, user]);
+    return () => {
+      mounted = false;
+    };
+  }, [axiosSecure, authLoading, user?.email]);
 
-  // ===== Add Menu Item =====
-  const handleAddMenu = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!restaurant) return;
+  /* ---------------- Image upload to imgbb (stores `image`) ---------------- */
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+
+      const res = await fetch(
+        `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_UPLOAD_API}`,
+        { method: "POST", body: fd }
+      );
+      const json = await res.json();
+      if (json?.success && json.data?.url) {
+        setForm((f) => ({ ...f, image: json.data.url }));
+        toast.success("Image uploaded (imgbb) ✅");
+      } else {
+        console.error("imgbb response:", json);
+        toast.error("Image upload failed");
+      }
+    } catch (err) {
+      console.error("Image upload error:", err);
+      toast.error("Image upload error");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  /* ---------------- Helper: normalize outgoing payload to backend shape ---------------- */
+  const buildPayloadForBackend = (payload: NewMenuItem) => {
+    // backend expects: restaurant_id, name, description, price, category, image, ingredients (array),
+    // allergens (array), nutrition (object with calories/protein/carbs/fat), booleans, preparation_time, etc.
+    return {
+      // note: restaurant_id added by caller
+      name: payload.name,
+      description: payload.description ?? null,
+      price: Number(payload.price ?? 0),
+      category: payload.category ?? "main_course",
+      image: payload.image ?? null,
+      ingredients: Array.isArray(payload.ingredients) ? payload.ingredients : (payload.ingredients ? [String(payload.ingredients)] : []),
+      allergens: Array.isArray(payload.allergens) ? payload.allergens : (payload.allergens ? [String(payload.allergens)] : []),
+      nutrition: {
+        calories: payload.nutrition?.calories ?? null,
+        protein: payload.nutrition?.protein ?? null,
+        carbs: payload.nutrition?.carbs ?? null,
+        fat: payload.nutrition?.fat ?? null,
+      },
+      is_vegetarian: !!payload.is_vegetarian,
+      is_vegan: !!payload.is_vegan,
+      is_halal: payload.is_halal === undefined ? true : !!payload.is_halal,
+      is_available: payload.is_available === undefined ? true : !!payload.is_available,
+      is_featured: !!payload.is_featured,
+      preparation_time: payload.preparation_time ?? "15-20 mins",
+      rating: payload["rating"] ?? 0,
+      total_reviews: payload["total_reviews"] ?? 0,
+    };
+  };
+
+  /* ---------------- Add or Update menu ---------------- */
+  const handleSubmitMenu = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!restaurant?._id) {
+      toast.error("Restaurant not ready.");
+      return;
+    }
 
     try {
       setSubmitting(true);
-      const { data } = await axiosSecure.post<MenuItem>(
-        `/restaurants/${restaurant._id}/menus`,
-        newItem
-      );
+      const payload = buildPayloadForBackend(form);
 
-      setMenus((prev) => [...prev, data]);
-      toast.success("Menu item added successfully!");
-      setNewItem({
+      if (editing) {
+        // update
+        const res = await axiosSecure.patch(`/restaurants/${restaurant._id}/menus/${editing._id}`, payload);
+
+        setMenus((prev) =>
+          prev.map((m) =>
+            m._id === editing._id
+              ? {
+                ...m,
+                ...payload,
+                image: payload.image ?? m.image,
+                updated_at: new Date().toISOString(),
+              }
+              : m
+          )
+        );
+        toast.success("Menu updated successfully");
+      } else {
+        // create
+        const res = await axiosSecure.post(`/restaurants/${restaurant._id}/menus`, {
+          ...payload,
+          restaurant_id: restaurant._id,
+        });
+
+        const resData = res?.data ?? res;
+
+        // normalize new menu to match table shape
+        const normalizedNewMenu: MenuItem = {
+          _id: resData?.insertedId ? String(resData.insertedId) : String(Date.now()),
+          restaurant_id: restaurant._id,
+          name: payload.name,
+          description: payload.description ?? null,
+          price: Number(payload.price ?? 0),
+          category: payload.category ?? "main_course",
+          image: payload.image ?? null,
+          ingredients: Array.isArray(payload.ingredients) ? payload.ingredients : [],
+          allergens: Array.isArray(payload.allergens) ? payload.allergens : [],
+          nutrition: payload.nutrition ?? { calories: null, protein: null, carbs: null, fat: null },
+          is_vegetarian: !!payload.is_vegetarian,
+          is_vegan: !!payload.is_vegan,
+          is_halal: payload.is_halal === undefined ? true : !!payload.is_halal,
+          is_available: payload.is_available === undefined ? true : !!payload.is_available,
+          is_featured: !!payload.is_featured,
+          preparation_time: payload.preparation_time ?? "15-20 mins",
+          rating: 0,
+          total_reviews: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
+        setMenus((prev) => [normalizedNewMenu, ...prev]);
+        toast.success("Menu added successfully");
+      }
+
+      // reset form + close
+      setForm({
         name: "",
         description: "",
         price: 0,
-        category: "",
-        image_url: "",
+        category: "main_course",
+        image: null,
+        ingredients: [],
+        allergens: [],
+        nutrition: { calories: null, protein: null, carbs: null, fat: null },
+        is_vegetarian: false,
+        is_vegan: false,
+        is_halal: true,
+        is_available: true,
+        is_featured: false,
+        preparation_time: "15-20 mins",
       });
+      setEditing(null);
       setShowModal(false);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to add menu item.");
+    } catch (err: any) {
+      console.error("Save menu error:", err);
+      toast.error(err?.response?.data?.message ?? "Failed to save menu item");
     } finally {
       setSubmitting(false);
     }
   };
 
-  // ===== Delete Menu Item =====
+
+  /* ---------------- Delete (soft delete via backend) ---------------- */
   const handleDelete = async (menuId: string) => {
-    if (!restaurant) return;
+    if (!restaurant?._id) return;
     if (!confirm("Are you sure you want to delete this menu item?")) return;
 
     try {
-      await axiosSecure.delete(
-        `/restaurants/${restaurant._id}/menus/${menuId}`
-      );
+      await axiosSecure.delete(`/restaurants/${restaurant._id}/menus/${menuId}`);
+      // backend marks is_available=false, remove from list for owner UI
       setMenus((prev) => prev.filter((m) => m._id !== menuId));
-      toast.success("Menu item deleted.");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to delete menu item.");
+      toast.success("Menu deleted");
+    } catch (err) {
+      console.error("Delete failed:", err);
+      toast.error("Failed to delete menu item");
     }
   };
 
-  // ===== Toggle Featured =====
-  const toggleFeatured = async (menuId: string, featured: boolean) => {
-    if (!restaurant) return;
-
+  /* ---------------- Toggle featured ---------------- */
+  const toggleFeatured = async (menuId: string, currentlyFeatured: boolean) => {
+    if (!restaurant?._id) return;
     try {
-      await axiosSecure.patch(
-        `/restaurants/${restaurant._id}/menus/${menuId}`,
-        { featured: !featured }
-      );
-      setMenus((prev) =>
-        prev.map((m) =>
-          m._id === menuId ? { ...m, featured: !featured } : m
-        )
-      );
-      toast.info(!featured ? "Item marked as featured ⭐" : "Item unfeatured");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to update featured status.");
+      await axiosSecure.patch(`/restaurants/${restaurant._id}/menus/${menuId}`, { is_featured: !currentlyFeatured });
+      setMenus((prev) => prev.map((m) => (m._id === menuId ? { ...m, is_featured: !currentlyFeatured } : m)));
+      toast.success(!currentlyFeatured ? "Marked featured" : "Removed featured");
+    } catch (err) {
+      console.error("Toggle featured error:", err);
+      toast.error("Failed to update featured flag");
     }
   };
 
-  if (loading) {
+  /* ---------------- Edit click ---------------- */
+  const handleEditClick = (menu: MenuItem) => {
+    setEditing(menu);
+    setForm({
+      name: menu.name ?? "",
+      description: menu.description ?? "",
+      price: Number(menu.price ?? 0),
+      category: menu.category ?? "main_course",
+      image: menu.image ?? null,
+      ingredients: menu.ingredients ?? [],
+      allergens: menu.allergens ?? [],
+      nutrition: {
+        calories: menu.nutrition?.calories ?? null,
+        protein: menu.nutrition?.protein ?? null,
+        carbs: menu.nutrition?.carbs ?? null,
+        fat: menu.nutrition?.fat ?? null,
+      },
+      is_vegetarian: !!menu.is_vegetarian,
+      is_vegan: !!menu.is_vegan,
+      is_halal: menu.is_halal === undefined ? true : !!menu.is_halal,
+      is_available: menu.is_available === undefined ? true : !!menu.is_available,
+      is_featured: !!menu.is_featured,
+      preparation_time: menu.preparation_time ?? "15-20 mins",
+    });
+    setShowModal(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  /* ---------------- Filtered menus (search) ---------------- */
+  const filteredMenus = menus.filter((m) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
     return (
-      <div className="flex justify-center items-center h-[80vh]">
-        <Loader2 className="w-8 h-8 text-[#EF451C] animate-spin" />
-      </div>
+      String(m.name ?? "").toLowerCase().includes(q) ||
+      String(m.description ?? "").toLowerCase().includes(q) ||
+      String(m.category ?? "").toLowerCase().includes(q)
     );
-  }
+  });
 
+  /* ---------------- UI rendering ---------------- */
   return (
-    <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Menu Management</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-[#EF451C] text-white px-4 py-2 rounded-lg font-medium flex items-center hover:bg-[#d63a13] transition"
-        >
-          <Plus className="w-5 h-5 mr-2" /> Add Menu
-        </button>
-      </div>
-
-      {/* Menu Table */}
-      <div className="bg-white rounded-2xl shadow border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold mb-4">All Menu Items</h2>
-        {menus.length === 0 ? (
-          <p className="text-gray-500 text-center py-6">
-            No menu items found.
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-200 text-sm">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-3 text-left">Image</th>
-                  <th className="p-3 text-left">Name</th>
-                  <th className="p-3 text-left">Category</th>
-                  <th className="p-3 text-left">Price</th>
-                  <th className="p-3 text-left">Featured</th>
-                  <th className="p-3 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {menus.map((menu) => (
-                  <tr
-                    key={menu._id}
-                    className="border-b hover:bg-gray-50 transition"
-                  >
-                    <td className="p-3">
-                      <img
-                        src={menu.image_url || "/placeholder.jpg"}
-                        alt={menu.name}
-                        className="w-14 h-14 object-cover rounded-lg"
-                      />
-                    </td>
-                    <td className="p-3 font-medium">{menu.name}</td>
-                    <td className="p-3 text-gray-600">{menu.category}</td>
-                    <td className="p-3 font-semibold text-[#EF451C]">
-                      ৳{menu.price.toFixed(2)}
-                    </td>
-                    <td className="p-3">
-                      <button
-                        onClick={() => toggleFeatured(menu._id, !!menu.featured)}
-                        className="text-gray-600 hover:text-[#EF451C]"
-                      >
-                        {menu.featured ? (
-                          <Star className="w-5 h-5 fill-[#EF451C]" />
-                        ) : (
-                          <StarOff className="w-5 h-5" />
-                        )}
-                      </button>
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => toast.info("Edit coming soon")}
-                          className="text-blue-500 hover:text-blue-600"
-                        >
-                          <Pencil className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(menu._id)}
-                          className="text-red-500 hover:text-red-600"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    <div className="bg-gray-50 min-h-screen p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Menu Management</h1>
+            <p className="text-sm text-gray-500 mt-1">Create and manage your restaurant's menu items.</p>
           </div>
-        )}
+
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search menu..."
+                className="border border-gray-200 rounded-lg px-3 py-2 w-56 focus:outline-none focus:ring-2 focus:ring-[#EF451C]/40"
+              />
+            </div>
+            <button
+              onClick={() => { setEditing(null); setShowModal(true); }}
+              className="inline-flex items-center gap-2 bg-[#EF451C] text-white px-4 py-2 rounded-lg hover:bg-[#d63a13] transition"
+            >
+              <Plus size={16} /> Add Menu
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold mb-4">All Menu Items</h2>
+
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-[#EF451C]" />
+            </div>
+          ) : errorMsg ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 font-semibold mb-2">{errorMsg}</p>
+              <p className="text-gray-500">Menus could not be loaded. Try again later.</p>
+            </div>
+          ) : Array.isArray(filteredMenus) && filteredMenus.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full border border-gray-200 text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Image</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Category</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Price</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Featured</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredMenus.map((menu) => (
+                    <tr key={menu._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <img src={menu.image ?? "/placeholder.jpg"} alt={menu.name} className="w-14 h-14 object-cover rounded-lg border" />
+                      </td>
+                      <td className="px-6 py-4 font-medium text-gray-800">{menu.name}</td>
+                      <td className="px-6 py-4 text-gray-600">{menu.category}</td>
+                      <td className="px-6 py-4 font-semibold text-[#EF451C]">৳{Number(menu.price ?? 0).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-center">
+                        <button onClick={() => toggleFeatured(menu._id, !!menu.is_featured)} className="inline-flex items-center justify-center">
+                          {menu.is_featured ? <Star className="w-5 h-5 text-yellow-400" /> : <StarOff className="w-5 h-5 text-gray-300" />}
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="inline-flex items-center gap-3">
+                          <button onClick={() => handleEditClick(menu)} className="text-blue-600 hover:text-blue-800" title="Edit">
+                            <Pencil />
+                          </button>
+                          <button onClick={() => handleDelete(menu._id)} className="text-red-600 hover:text-red-800" title="Delete">
+                            <Trash2 />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-12 text-gray-500">No menu items found.</div>
+          )}
+        </div>
       </div>
 
-      {/* Add Menu Modal */}
+      {/* ---------- Modal: Add / Edit ---------- */}
       <AnimatePresence>
         {showModal && (
           <motion.div
-            className="fixed inset-0 bg-black/50 flex justify-center items-center z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-lg relative"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] overflow-y-auto p-6"
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
             >
-              <button
-                onClick={() => setShowModal(false)}
-                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <h2 className="text-xl font-semibold mb-4">Add Menu Item</h2>
-              <form onSubmit={handleAddMenu} className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Name"
-                  value={newItem.name}
-                  onChange={(e) =>
-                    setNewItem({ ...newItem, name: e.target.value })
-                  }
-                  required
-                  className="border p-3 rounded-lg w-full focus:outline-[#EF451C]"
-                />
-                <input
-                  type="text"
-                  placeholder="Category"
-                  value={newItem.category}
-                  onChange={(e) =>
-                    setNewItem({ ...newItem, category: e.target.value })
-                  }
-                  required
-                  className="border p-3 rounded-lg w-full focus:outline-[#EF451C]"
-                />
-                <input
-                  type="number"
-                  placeholder="Price"
-                  value={newItem.price}
-                  onChange={(e) =>
-                    setNewItem({
-                      ...newItem,
-                      price: parseFloat(e.target.value),
-                    })
-                  }
-                  required
-                  className="border p-3 rounded-lg w-full focus:outline-[#EF451C]"
-                />
-                <input
-                  type="text"
-                  placeholder="Image URL"
-                  value={newItem.image_url}
-                  onChange={(e) =>
-                    setNewItem({ ...newItem, image_url: e.target.value })
-                  }
-                  className="border p-3 rounded-lg w-full focus:outline-[#EF451C]"
-                />
-                <textarea
-                  placeholder="Description"
-                  value={newItem.description}
-                  onChange={(e) =>
-                    setNewItem({ ...newItem, description: e.target.value })
-                  }
-                  required
-                  className="border p-3 rounded-lg w-full focus:outline-[#EF451C]"
-                ></textarea>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  
-                  className="bg-[#EF451C] text-white py-3 rounded-lg font-medium hover:bg-[#d63a13] transition w-full flex justify-center items-center"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="animate-spin w-5 h-5 mr-2" /> Adding...
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="w-5 h-5 mr-2" /> Add Menu
-                    </>
-                  )}
+              {/* Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-800">{editing ? "Edit Menu Item" : "Add Menu Item"}</h3>
+                  <p className="text-sm text-gray-500 mt-1">Fill in the details and save your menu item.</p>
+                </div>
+                <button onClick={() => { setShowModal(false); setEditing(null); }} className="text-gray-500 hover:text-gray-700">
+                  <X />
                 </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSubmitMenu} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+                {/* Left Column */}
+                <div className="space-y-3">
+                  <input
+                    required
+                    placeholder="Name"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="w-full border p-3 rounded-lg"
+                  />
+
+                  {/* Category Radio */}
+                  <div className="flex gap-3 flex-wrap">
+                    {["Appetizer", "Main Course", "Dessert", "Beverage", "Side"].map(cat => (
+                      <label key={cat} className="flex items-center gap-2 text-sm">
+                        <input
+                          type="radio"
+                          value={cat.toLowerCase().replace(" ", "_")}
+                          checked={form.category === cat.toLowerCase().replace(" ", "_")}
+                          onChange={(e) => setForm({ ...form, category: e.target.value })}
+                          className="accent-[#EF451C]"
+                        />
+                        {cat}
+                      </label>
+                    ))}
+                  </div>
+
+                  <input
+                    required
+                    type="number" step="0.01"
+                    placeholder="Price (BDT)"
+                    value={String(form.price)}
+                    onChange={(e) => setForm({ ...form, price: Number(e.target.value || 0) })}
+                    className="w-full border p-3 rounded-lg"
+                  />
+
+                  <textarea
+                    placeholder="Description"
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    rows={3}
+                    className="w-full border p-3 rounded-lg"
+                  />
+
+                  <input
+                    placeholder="Preparation time (e.g., 15-20 mins)"
+                    value={form.preparation_time}
+                    onChange={(e) => setForm({ ...form, preparation_time: e.target.value })}
+                    className="w-full border p-3 rounded-lg"
+                  />
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-3">
+                  {/* Image */}
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Image</label>
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="border p-2 rounded-lg w-full" />
+                    {uploading && <div className="text-sm text-gray-500 mt-1">Uploading...</div>}
+                    {form.image && <img src={form.image} alt="preview" className="mt-3 w-40 h-40 object-cover rounded-lg border" />}
+                  </div>
+
+                  {/* Ingredients */}
+                  <textarea
+                    placeholder="Ingredients (one per line)"
+                    value={(form.ingredients ?? []).join("\n")}
+                    onChange={(e) => setForm({ ...form, ingredients: e.target.value.split("\n").map(s => s.trim()).filter(Boolean) })}
+                    className="w-full border p-3 rounded-lg h-24 resize-none"
+                  />
+
+                  {/* Show Advanced toggle */}
+                  <div className="flex items-center gap-2 mt-2">
+                    <input
+                      type="checkbox"
+                      checked={showAdvanced}
+                      onChange={(e) => setShowAdvanced(e.target.checked)}
+                      id="toggle-advanced"
+                      className="accent-[#EF451C]"
+                    />
+                    <label htmlFor="toggle-advanced" className="text-sm text-gray-600 cursor-pointer">Show Advanced (Nutrition)</label>
+                  </div>
+
+                  {/* Advanced nutrition fields */}
+                  {showAdvanced && (
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <div>
+                        <label className="block text-sm text-gray-600">Calories</label>
+                        <input
+                          value={form.nutrition?.calories ?? ""}
+                          onChange={(e) => setForm({ ...form, nutrition: { ...(form.nutrition ?? {}), calories: e.target.value ? Number(e.target.value) : null } })}
+                          className="w-full border p-2 rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600">Protein</label>
+                        <input
+                          value={form.nutrition?.protein ?? ""}
+                          onChange={(e) => setForm({ ...form, nutrition: { ...(form.nutrition ?? {}), protein: e.target.value ?? null } })}
+                          className="w-full border p-2 rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600">Carbs</label>
+                        <input
+                          value={form.nutrition?.carbs ?? ""}
+                          onChange={(e) => setForm({ ...form, nutrition: { ...(form.nutrition ?? {}), carbs: e.target.value ?? null } })}
+                          className="w-full border p-2 rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-600">Fat</label>
+                        <input
+                          value={form.nutrition?.fat ?? ""}
+                          onChange={(e) => setForm({ ...form, nutrition: { ...(form.nutrition ?? {}), fat: e.target.value ?? null } })}
+                          className="w-full border p-2 rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Flags */}
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    <label className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={!!form.is_vegetarian} onChange={(e) => setForm({ ...form, is_vegetarian: e.target.checked })} className="accent-[#EF451C]" /> Vegetarian
+                    </label>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={!!form.is_vegan} onChange={(e) => setForm({ ...form, is_vegan: e.target.checked })} className="accent-[#EF451C]" /> Vegan
+                    </label>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={!!form.is_halal} onChange={(e) => setForm({ ...form, is_halal: e.target.checked })} className="accent-[#EF451C]" /> Halal
+                    </label>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={!!form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} className="accent-[#EF451C]" /> Featured
+                    </label>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={!!form.is_available} onChange={(e) => setForm({ ...form, is_available: e.target.checked })} className="accent-[#EF451C]" /> Available
+                    </label>
+                  </div>
+                </div>
+
+                {/* Footer buttons */}
+                <div className="lg:col-span-2 flex justify-end gap-3 mt-4">
+                  <button type="button" onClick={() => { setShowModal(false); setEditing(null); }} className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">Cancel</button>
+                  <button type="submit" disabled={submitting} className="px-5 py-2 bg-[#EF451C] text-white rounded-lg hover:bg-[#d63a13] flex items-center gap-2">
+                    {submitting ? <><Loader2 className="animate-spin w-4 h-4" /> Saving...</> : (editing ? "Update" : "Add")}
+                  </button>
+                </div>
+
               </form>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 };
