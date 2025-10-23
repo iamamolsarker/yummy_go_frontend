@@ -7,6 +7,7 @@ import AuthProvider from './contextsProvider/AuthProvider.tsx'
 import { ToastContainer } from 'react-toastify'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import ErrorBoundary from './components/shared/ErrorBoundary.tsx'
 
 // Create a client
 const queryClient = new QueryClient({
@@ -22,24 +23,26 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RouterProvider router={router} />
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <RouterProvider router={router} />
 
-        {/* react toastify */}
-        <ToastContainer
-          position="top-right"
-          autoClose={2000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          pauseOnHover
-          draggable
-          theme="colored"
-        />
-      </AuthProvider>
-      {/* React Query DevTools */}
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+          {/* react toastify */}
+          <ToastContainer
+            position="top-right"
+            autoClose={2000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            pauseOnHover
+            draggable
+            theme="colored"
+          />
+        </AuthProvider>
+        {/* React Query DevTools */}
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </ErrorBoundary>
   </StrictMode>,
 )
