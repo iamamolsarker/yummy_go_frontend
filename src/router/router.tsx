@@ -32,6 +32,7 @@ import Reports from "../Dashboard/Admin/Reports/Reports";
 import MenuManagement from "../Dashboard/Restaurant_Owner/MenuManagement/MenuManagement";
 import RestaurantOrdersManagement from "../Dashboard/Restaurant_Owner/OrdersManagements/Orders";
 import RevenuePage from "../Dashboard/Restaurant_Owner/Revenue/RevenuePage";
+import RestaurantsAnalyticsPage from "../Dashboard/Restaurant_Owner/Analytics/RstaurantsAnalytics";
 
 
 
@@ -165,6 +166,10 @@ export const router = createBrowserRouter([
       {
         path: "restaurant/revenue",
         element: <RevenuePage></RevenuePage>
+      },
+      {
+        path: "restaurant/analytics",
+        element: <RestaurantsAnalyticsPage></RestaurantsAnalyticsPage>
       },
 
     ]
