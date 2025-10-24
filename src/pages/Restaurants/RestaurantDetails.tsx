@@ -174,7 +174,7 @@ const RestaurantDetails: React.FC = () => {
   const isTemporarilyUnavailable = 
     (restaurant.is_open === false) || 
     (restaurant.is_active === false) || 
-    (restaurant.status && restaurant.status !== 'active');
+    (restaurant.status && restaurant.status !== 'approved');
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -11,7 +11,6 @@ import {
   Star,
   StarOff,
   X,
-  Upload,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import "react-toastify/dist/ReactToastify.css";
@@ -270,7 +269,6 @@ const MenuManagement: React.FC = () => {
 
       if (editing) {
         // update
-        const res = await axiosSecure.patch(`/restaurants/${restaurant._id}/menus/${editing._id}`, payload);
 
         setMenus((prev) =>
           prev.map((m) =>
