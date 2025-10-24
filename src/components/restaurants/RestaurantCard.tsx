@@ -11,7 +11,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
   const isTemporarilyUnavailable = 
     (restaurant.is_open === false) || 
     (restaurant.is_active === false) || 
-    (restaurant.status && restaurant.status !== 'active');
+    (restaurant.status && restaurant.status !== 'approved');
   
   // Format delivery time
   const deliveryTime = restaurant.delivery_time 

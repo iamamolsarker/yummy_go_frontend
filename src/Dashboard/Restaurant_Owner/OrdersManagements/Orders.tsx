@@ -78,8 +78,6 @@ export default function OrdersManagement(): JSX.Element {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 20;
  
-  console.log("Restaurant ID in OrdersManagement:", restaurantId);
-
 
   // Step 1: Get restaurant ID by logged-in owner's email
 useEffect(() => {
@@ -109,7 +107,7 @@ useEffect(() => {
   fetchRestaurantId();
 
   return () => { mounted = false; };
-}, [axiosSecure]);
+}, [axiosSecure, user]);
 
 
   // Fetch orders for restaurant
@@ -239,15 +237,6 @@ useEffect(() => {
     return "bg-gray-100 text-gray-800";
   };
 
-  const formatAddress = (addr: any) => {
-    if (!addr) return "N/A";
-    if (typeof addr === "string") return addr;
-    const parts = [addr.street, addr.area, addr.city, addr.postal_code].filter(Boolean);
-    const base = parts.join(", ");
-    const phone = addr.phone ? ` | 📞 ${addr.phone}` : "";
-    const ins = addr.instructions ? ` | 📝 ${addr.instructions}` : "";
-    return base + phone + ins;
-  };
 
   return (
     <div className="bg-gray-50 min-h-screen p-6">
