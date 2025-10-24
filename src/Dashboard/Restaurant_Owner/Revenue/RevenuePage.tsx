@@ -166,12 +166,13 @@ export default function RevenuePage(): JSX.Element {
       doc.text(`BDT ${o.total_amount.toFixed(2)}`, startX + colWidths[0] + 2, y + 6);
       
       // Color-coded Payment Status
-      const status = o.payment_status.toLowerCase();
-      const color = STATUS_COLOR[status as keyof typeof STATUS_COLOR] || [200,200,200];
-      doc.setFillColor(...color);
-      doc.rect(startX + colWidths[0] + colWidths[1], y, colWidths[2], 8, "F");
-      doc.setTextColor(0,0,0);
-      doc.text(o.payment_status.charAt(0).toUpperCase() + o.payment_status.slice(1), startX + colWidths[0] + colWidths[1] + 2, y + 6);
+            const status = o.payment_status.toLowerCase();
+            const color = STATUS_COLOR[status as keyof typeof STATUS_COLOR] || [200,200,200];
+            const [r, g, b] = color as [number, number, number];
+            doc.setFillColor(r, g, b);
+            doc.rect(startX + colWidths[0] + colWidths[1], y, colWidths[2], 8, "F");
+            doc.setTextColor(0,0,0);
+            doc.text(o.payment_status.charAt(0).toUpperCase() + o.payment_status.slice(1), startX + colWidths[0] + colWidths[1] + 2, y + 6);
 
       doc.setTextColor(0,0,0);
       doc.text(new Date(o.placed_at).toLocaleDateString(), startX + colWidths[0] + colWidths[1] + colWidths[2] + 2, y + 6);
@@ -240,7 +241,7 @@ export default function RevenuePage(): JSX.Element {
                         fill="#8884d8"
                         label
                       >
-                        {pieData.map((entry, index) => (
+                        {pieData.map((_entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
