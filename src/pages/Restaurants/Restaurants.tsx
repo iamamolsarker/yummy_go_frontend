@@ -31,11 +31,19 @@ export default function Restaurants() {
 
         // Apply search filter
         if (searchQuery) {
-            filtered = filtered.filter(
-                (r) =>
+            filtered = filtered.filter((r) => {
+                const cuisineData = r.cuisine || r.cuisine_types;
+                const cuisineArray: string[] = Array.isArray(cuisineData)
+                    ? cuisineData
+                    : typeof cuisineData === 'string'
+                    ? [cuisineData]
+                    : [];
+                
+                return (
                     r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    (r.cuisine || r.cuisine_types)?.some((c) => c.toLowerCase().includes(searchQuery.toLowerCase()))
-            );
+                    cuisineArray.some((c) => c.toLowerCase().includes(searchQuery.toLowerCase()))
+                );
+            });
         }
 
         // Apply cuisine filter
@@ -43,9 +51,16 @@ export default function Restaurants() {
             const cuisinesToFilter = selectedCuisine
                 ? [selectedCuisine, ...filters.cuisines]
                 : filters.cuisines;
-            filtered = filtered.filter((r) =>
-                (r.cuisine || r.cuisine_types)?.some((c) => cuisinesToFilter.includes(c))
-            );
+            filtered = filtered.filter((r) => {
+                const cuisineData = r.cuisine || r.cuisine_types;
+                const cuisineArray: string[] = Array.isArray(cuisineData)
+                    ? cuisineData
+                    : typeof cuisineData === 'string'
+                    ? [cuisineData]
+                    : [];
+                
+                return cuisineArray.some((c) => cuisinesToFilter.includes(c));
+            });
         }
 
         // Apply price range filter (based on delivery fee)
