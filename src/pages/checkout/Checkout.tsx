@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { MapPin, Phone, CreditCard, Wallet, Building2, Clock, ShoppingBag, AlertCircle } from 'lucide-react';
+import { MapPin, Phone, CreditCard, Wallet, Building2, Clock, ShoppingBag, AlertCircle, Smartphone } from 'lucide-react';
 import { useCart } from '../../hooks/useCart';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import PageContainer from '../../components/shared/PageContainer';
 import { toast } from 'react-toastify';
+
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+// Initialize Stripe with your publishable key
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
+type PaymentMethodType = 'cash' | 'card' | 'mobile' | 'bkash' | 'nagad';
 
 interface DeliveryAddress {
   street: string;
@@ -15,6 +23,110 @@ interface DeliveryAddress {
   phone: string;
   instructions?: string;
 }
+
+interface OrderData {
+  cart_id: string;
+  restaurant_id: string;
+  user_email?: string;
+  delivery_address: DeliveryAddress;
+  payment_method: PaymentMethodType;
+  payment_intent_id?: string;
+  payment_status: 'pending' | 'paid' | 'processing';
+  items: Array<{
+    menu_id: string;
+    name: string;
+    quantity: number;
+    price: number;
+    notes?: string;
+  }>;
+  subtotal: number;
+  delivery_fee: number;
+  vat: number;
+  total_amount: number;
+  status: string;
+}
+
+// Payment Form Component
+interface PaymentIntent {
+  id: string;
+  status: string;
+  client_secret: string;
+}
+
+const PaymentForm = ({ totalAmount, onPaymentSuccess }: { 
+  totalAmount: number; 
+  onPaymentSuccess: (paymentIntent: PaymentIntent) => void 
+}) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const axiosSecure = useAxiosSecure();
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+    
+    setLoading(true);
+    
+    try {
+      const { error, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: elements.getElement(CardElement)!,
+      });
+
+      if (error) {
+        setError(error.message || 'Payment failed');
+        return;
+      }
+
+      // Call your backend to process payment
+      const response = await axiosSecure.post('/create-payment-intent', {
+        amount: Math.round(totalAmount * 100), // Convert to cents
+        payment_method_id: paymentMethod.id
+      });
+
+      if (response.data.success) {
+        onPaymentSuccess(response.data.paymentIntent);
+      }
+    } catch (_err) {
+      setError('Payment failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="p-4 border rounded-lg">
+        <CardElement
+          options={{
+            style: {
+              base: {
+                fontSize: '16px',
+                color: '#424770',
+                '::placeholder': {
+                  color: '#aab7c4',
+                },
+              },
+              invalid: {
+                color: '#9e2146',
+              },
+            },
+          }}
+        />
+      </div>
+      {error && <div className="text-red-500 text-sm">{error}</div>}
+      <button
+        type="submit"
+        disabled={!stripe || loading}
+        className="w-full bg-[#EF451C] text-white py-3 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {loading ? 'Processing...' : 'Pay Now'}
+      </button>
+    </form>
+  );
+};
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +139,9 @@ const Checkout: React.FC = () => {
   const { cartId, restaurantId } = location.state || {};
 
   // State Management
+  const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [paymentIntent, setPaymentIntent] = useState<string | null>(null);
+  
   const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress>({
     street: '',
     area: '',
@@ -37,6 +152,7 @@ const Checkout: React.FC = () => {
   });
 
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'mobile'>('cash');
+  const [mobilePayment, setMobilePayment] = useState<'bkash' | 'nagad' | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [restaurant, setRestaurant] = useState<{
     name?: string;
@@ -100,15 +216,23 @@ const Checkout: React.FC = () => {
   const handlePlaceOrder = async () => {
     if (!validateForm()) return;
 
+    // Check if payment is required but not completed
+    if ((paymentMethod === 'card' || paymentMethod === 'mobile') && !paymentCompleted) {
+      toast.error('Please complete the payment before placing your order');
+      return;
+    }
+
     setIsProcessing(true);
     try {
       // Create order
-      const orderData = {
+      const orderData: OrderData = {
         cart_id: cartId,
         restaurant_id: restaurantId,
-        user_email: user?.email,
+        user_email: user?.email || undefined,
         delivery_address: deliveryAddress,
         payment_method: paymentMethod,
+        payment_intent_id: paymentIntent || undefined, // Add payment intent if paid with card
+        payment_status: paymentMethod === 'cash' ? 'pending' : 'paid',
         items: localCart.map(item => ({
           menu_id: item._id,
           name: item.name,
@@ -122,6 +246,12 @@ const Checkout: React.FC = () => {
         total_amount: totalAmount,
         status: 'pending',
       };
+
+      // For mobile banking, add mobile payment details
+      if (paymentMethod === 'mobile' && mobilePayment) {
+        orderData.payment_method = mobilePayment; // 'bkash' or 'nagad'
+        orderData.payment_status = 'processing';
+      }
 
       const response = await axiosSecure.post('/orders', orderData);
       
@@ -277,7 +407,11 @@ const Checkout: React.FC = () => {
                       name="payment"
                       value="cash"
                       checked={paymentMethod === 'cash'}
-                      onChange={() => setPaymentMethod('cash')}
+                      onChange={() => {
+                        setPaymentMethod('cash');
+                        setPaymentCompleted(false);
+                        setPaymentIntent(null);
+                      }}
                       className="w-5 h-5"
                       style={{ accentColor: '#EF451C' }}
                     />
@@ -302,7 +436,11 @@ const Checkout: React.FC = () => {
                       name="payment"
                       value="card"
                       checked={paymentMethod === 'card'}
-                      onChange={() => setPaymentMethod('card')}
+                      onChange={() => {
+                        setPaymentMethod('card');
+                        setPaymentCompleted(false);
+                        setPaymentIntent(null);
+                      }}
                       className="w-5 h-5"
                       style={{ accentColor: '#EF451C' }}
                     />
@@ -327,7 +465,12 @@ const Checkout: React.FC = () => {
                       name="payment"
                       value="mobile"
                       checked={paymentMethod === 'mobile'}
-                      onChange={() => setPaymentMethod('mobile')}
+                      onChange={() => {
+                        setPaymentMethod('mobile');
+                        setPaymentCompleted(false);
+                        setPaymentIntent(null);
+                        setMobilePayment(null);
+                      }}
                       className="w-5 h-5"
                       style={{ accentColor: '#EF451C' }}
                     />
@@ -337,6 +480,97 @@ const Checkout: React.FC = () => {
                       <p className="text-sm text-gray-500">bKash, Nagad, Rocket</p>
                     </div>
                   </label>
+                </div>
+
+                {/* Payment Forms */}
+                <div className="mt-4">
+                  {paymentMethod === 'card' && (
+                    <Elements stripe={stripePromise}>
+                      <PaymentForm
+                        totalAmount={totalAmount}
+                        onPaymentSuccess={(paymentIntent) => {
+                          setPaymentIntent(paymentIntent.id);
+                          setPaymentCompleted(true);
+                          toast.success('Payment successful! You can now place your order.');
+                        }}
+                      />
+                    </Elements>
+                  )}
+
+                  {paymentMethod === 'mobile' && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <button
+                          onClick={() => setMobilePayment('bkash')}
+                          className={`p-4 border-2 rounded-lg flex items-center justify-center gap-2 transition-all ${
+                            mobilePayment === 'bkash'
+                              ? 'border-[#EF451C] bg-orange-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <img src="/bkash-logo.png" alt="bKash" className="h-8" />
+                          <span className="font-semibold">bKash</span>
+                        </button>
+                        <button
+                          onClick={() => setMobilePayment('nagad')}
+                          className={`p-4 border-2 rounded-lg flex items-center justify-center gap-2 transition-all ${
+                            mobilePayment === 'nagad'
+                              ? 'border-[#EF451C] bg-orange-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <img src="/nagad-logo.png" alt="Nagad" className="h-8" />
+                          <span className="font-semibold">Nagad</span>
+                        </button>
+                      </div>
+                      
+                      {mobilePayment && (
+                        <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              {mobilePayment.toUpperCase()} Number
+                            </label>
+                            <input
+                              type="tel"
+                              placeholder="01XXXXXXXXX"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EF451C]"
+                            />
+                          </div>
+                          <button
+                            className="w-full bg-[#EF451C] text-white py-3 rounded-lg hover:opacity-90 font-semibold"
+                            onClick={async () => {
+                              try {
+                                // Simulating mobile payment verification
+                                const response = await axiosSecure.post('/verify-mobile-payment', {
+                                  provider: mobilePayment,
+                                  amount: totalAmount,
+                                });
+                                
+                                if (response.data.success) {
+                                  setPaymentIntent(response.data.transactionId);
+                                  setPaymentCompleted(true);
+                                  toast.success('Payment successful! You can now place your order.');
+                                }
+                              } catch (_error) {
+                                toast.error('Payment verification failed. Please try again.');
+                              }
+                            }}
+                          >
+                            Pay with {mobilePayment.toUpperCase()}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {paymentMethod === 'cash' && (
+                    <div className="bg-gray-50 p-4 rounded-lg mt-4">
+                      <p className="text-gray-600 flex items-center gap-2">
+                        <Wallet className="text-[#EF451C]" size={20} />
+                        Pay with cash upon delivery. Our delivery rider will collect the payment.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -408,7 +642,7 @@ const Checkout: React.FC = () => {
 
                 {/* Place Order Button */}
                 <button
-                  onClick={handlePlaceOrder}
+                  onClick={() => handlePlaceOrder()}
                   disabled={isProcessing || (restaurant?.minimum_order ? cartTotal < restaurant.minimum_order : false)}
                   className="w-full text-white py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-opacity disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   style={{ backgroundColor: isProcessing ? '#9CA3AF' : '#EF451C' }}

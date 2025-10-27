@@ -484,7 +484,7 @@ export default function DashboardOverview(): JSX.Element {
                 )}
               </div>
               <div className="mt-3 text-right">
-                <a href="/dashboard/orders" className="text-sm text-[#EF451C] hover:underline">View all orders</a>
+                <a href="/dashboard/restaurant/orders" className="text-sm text-[#EF451C] hover:underline">View all orders</a>
               </div>
             </div>
           </aside>
