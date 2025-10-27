@@ -173,14 +173,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return;
     }
 
-    // Check if trying to add from different restaurant
-    if (backendCart && restaurantId && backendCart.restaurant_id !== restaurantId) {
-      const confirmSwitch = window.confirm(
-        'Your cart contains items from another restaurant. Do you want to clear it and start a new cart?'
-      );
-      if (!confirmSwitch) return;
-      await clearCartMutation.mutateAsync(backendCart._id);
-    }
+  
 
     try {
       let cartId = backendCart?._id;
