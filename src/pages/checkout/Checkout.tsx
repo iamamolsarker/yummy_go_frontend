@@ -132,7 +132,7 @@ const Checkout: React.FC = () => {
         toast.success('Order placed successfully!');
         
         // Redirect to order confirmation page
-        navigate(`/order-confirmation/${response.data.data._id}`, {
+        navigate(`/order-confirmation/${response.data.data.orderId}`, {
           state: { orderId: response.data.data._id }
         });
       }

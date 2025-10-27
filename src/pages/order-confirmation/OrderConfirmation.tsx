@@ -151,7 +151,7 @@ const OrderConfirmation: React.FC = () => {
                       <p className="text-sm text-gray-500 mt-1">Note: {item.notes}</p>
                     )}
                   </div>
-                  <p className="font-semibold text-gray-800">৳{(item.price * item.quantity).toFixed(2)}</p>
+                  <p className="font-semibold text-gray-800">৳{((item.price || 0) * (item.quantity || 0)).toFixed(2)}</p>
                 </div>
               ))}
             </div>
@@ -160,19 +160,19 @@ const OrderConfirmation: React.FC = () => {
             <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
-                <span className="font-semibold">৳{order.subtotal.toFixed(2)}</span>
+                <span className="font-semibold">৳{(order.subtotal || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Delivery Fee</span>
-                <span className="font-semibold">৳{order.delivery_fee.toFixed(2)}</span>
+                <span className="font-semibold">৳{(order.delivery_fee || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>VAT (5%)</span>
-                <span className="font-semibold">৳{order.vat.toFixed(2)}</span>
+                <span className="font-semibold">৳{(order.vat || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-xl font-bold text-dark-title pt-2 border-t border-gray-200">
                 <span>Total</span>
-                <span style={{ color: '#EF451C' }}>৳{order.total_amount.toFixed(2)}</span>
+                <span style={{ color: '#EF451C' }}>৳{(order.total_amount || 0).toFixed(2)}</span>
               </div>
             </div>
           </div>
