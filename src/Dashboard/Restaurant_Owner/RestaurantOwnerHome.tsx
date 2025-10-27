@@ -23,14 +23,14 @@ import useAuth from "../../hooks/useAuth";
  * - 7-day revenue sparkline
  * - Recent reviews preview
  * - Top menu items preview
- * - Profile card with Edit modal (PUT /api/restaurants/:id)
+ * - Profile card with Edit modal (PUT /restaurants/:id)
  *
  * Assumes:
- * - GET /api/restaurants/email/:email
- * - GET /api/restaurants/:restaurantId/menus
- * - GET /api/orders/restaurant/:restaurantId
- * - GET /api/reviews/restaurant/:restaurantId   (you said you have reviews API earlier)
- * - PUT /api/restaurants/:id
+ * - GET /restaurants/email/:email
+ * - GET /restaurants/:restaurantId/menus
+ * - GET /orders/restaurant/:restaurantId
+ * - GET /reviews/restaurant/:restaurantId   (you said you have reviews API earlier)
+ * - PUT /restaurants/:id
  */
 
 type Restaurant = {
@@ -99,7 +99,7 @@ export default function DashboardOverview(): JSX.Element {
         if (!user?.email) throw new Error("User not logged in");
 
         // 1) restaurant by email
-        const resR = await axiosSecure.get(`/api/restaurants/email/${user.email}`);
+        const resR = await axiosSecure.get(`/restaurants/email/${user.email}`);
         const rest = resR.data?.data || resR.data;
         if (!rest?._id) throw new Error("Restaurant not found");
         if (!mounted) return;
@@ -109,9 +109,9 @@ export default function DashboardOverview(): JSX.Element {
 
         // parallel fetch menus, orders, reviews
         const [resMenus, resOrders, resReviews] = await Promise.all([
-          axiosSecure.get(`/api/restaurants/${id}/menus`),
-          axiosSecure.get(`/api/orders/restaurant/${id}`),
-          axiosSecure.get(`/api/reviews/restaurant/${id}`).catch(() => ({ data: [] })), // graceful if reviews route missing
+          axiosSecure.get(`/restaurants/${id}/menus`),
+          axiosSecure.get(`/orders/restaurant/${id}`),
+          axiosSecure.get(`/reviews/restaurant/${id}`).catch(() => ({ data: [] })), // graceful if reviews route missing
         ]);
 
         if (!mounted) return;
@@ -196,14 +196,14 @@ export default function DashboardOverview(): JSX.Element {
   const handleEditChange = (k: keyof Restaurant, v: any) => {
     setEditForm((prev) => ({ ...prev, [k]: v }));
   };
-
   const saveProfile = async () => {
     if (!restaurant) return;
     setIsSaving(true);
     setError(null);
     try {
       const payload = { ...editForm };
-      const res = await axiosSecure.put(`/api/restaurants/${restaurant._id}`, payload);
+      console.log(restaurant._id)
+      const res = await axiosSecure.put(`/restaurants/${restaurant._id}`, payload);
       const updated = res.data?.data || res.data;
       setRestaurant(updated);
       setEditOpen(false);
@@ -258,14 +258,7 @@ export default function DashboardOverview(): JSX.Element {
             <h1 className="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
             <p className="text-sm text-gray-500 mt-1">Quick snapshot & controls for your restaurant</p>
           </div>
-          <div>
-            <button
-              onClick={() => openEdit()}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#EF451C] text-white rounded shadow"
-            >
-              <Edit2 size={16} /> Edit Profile
-            </button>
-          </div>
+          
         </header>
 
         {error && (
@@ -369,7 +362,7 @@ export default function DashboardOverview(): JSX.Element {
             <div className="bg-white rounded-lg shadow p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-medium text-gray-700">Recent Reviews</h3>
-                <a className="text-sm text-[#EF451C] hover:underline" href="/dashboard/reviews">View all</a>
+                <a className="text-sm text-[#EF451C] hover:underline" href="/dashboard/restaurant/reviews">View all</a>
               </div>
               <div className="space-y-3">
                 {recentReviews.length === 0 ? (
@@ -434,7 +427,7 @@ export default function DashboardOverview(): JSX.Element {
                 <button onClick={openEdit} className="flex-1 inline-flex items-center gap-2 justify-center px-3 py-2 bg-[#EF451C] text-white rounded">
                   <Edit2 size={14} /> Edit Info
                 </button>
-                <a href="/dashboard/menus" className="flex-1 inline-flex items-center gap-2 justify-center px-3 py-2 border rounded">
+                <a href="/dashboard/restaurant/menu" className="flex-1 inline-flex items-center gap-2 justify-center px-3 py-2 border rounded">
                   Manage Menu
                 </a>
               </div>
