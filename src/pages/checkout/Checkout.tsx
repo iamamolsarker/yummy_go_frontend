@@ -89,6 +89,7 @@ const PaymentForm = ({ totalAmount, onPaymentSuccess }: {
       if (response.data.success) {
         onPaymentSuccess(response.data.paymentIntent);
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {
       setError('Payment failed. Please try again.');
     } finally {
