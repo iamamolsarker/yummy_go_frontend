@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { MapPin, Phone, CreditCard, Wallet, Building2, Clock, ShoppingBag, AlertCircle, Smartphone } from 'lucide-react';
+import { MapPin, Phone, CreditCard, Wallet, Building2, Clock, ShoppingBag, AlertCircle } from 'lucide-react';
 import { useCart } from '../../hooks/useCart';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
@@ -53,9 +53,10 @@ interface PaymentIntent {
   client_secret: string;
 }
 
-const PaymentForm = ({ totalAmount, onPaymentSuccess }: { 
+const PaymentForm = ({ totalAmount, onPaymentSuccess, disabled = false }: { 
   totalAmount: number; 
-  onPaymentSuccess: (paymentIntent: PaymentIntent) => void 
+  onPaymentSuccess: (paymentIntent: PaymentIntent) => void;
+  disabled?: boolean;
 }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -66,31 +67,61 @@ const PaymentForm = ({ totalAmount, onPaymentSuccess }: {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements) return;
-    
+
     setLoading(true);
-    
+
     try {
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
+      const { error: stripeError, paymentMethod } = await stripe.createPaymentMethod({
         type: 'card',
         card: elements.getElement(CardElement)!,
       });
 
-      if (error) {
-        setError(error.message || 'Payment failed');
+      if (stripeError) {
+        setError(stripeError.message || 'Payment failed');
         return;
       }
 
-      // Call your backend to process payment
+      // Call your backend to create/initialize a payment intent
       const response = await axiosSecure.post('/create-payment-intent', {
         amount: Math.round(totalAmount * 100), // Convert to cents
-        payment_method_id: paymentMethod.id
+        payment_method_id: paymentMethod.id,
       });
 
-      if (response.data.success) {
-        onPaymentSuccess(response.data.paymentIntent);
+      const respData = response?.data;
+      const payload = respData?.data || respData;
+
+      // server payload commonly includes clientSecret and paymentIntentId
+      const clientSecret = payload?.clientSecret || payload?.client_secret;
+      const serverPaymentIntentId = payload?.paymentIntentId || payload?.payment_intent_id || payload?.paymentIntent?.id;
+
+      if (clientSecret) {
+        // Confirm the payment on client using the client secret
+        const confirm = await stripe.confirmCardPayment(clientSecret, {
+          payment_method: paymentMethod.id,
+        });
+
+        if (confirm.error) {
+          setError(confirm.error.message || 'Payment confirmation failed');
+          return;
+        }
+
+        const pi = confirm.paymentIntent;
+        const finalId = serverPaymentIntentId || pi?.id;
+
+        if (pi && (pi.status === 'succeeded' || pi.status === 'requires_capture' || pi.status === 'requires_action')) {
+          onPaymentSuccess({ id: finalId || pi.id, status: pi.status, client_secret: clientSecret });
+        } else {
+          setError('Payment was not completed.');
+        }
+      } else if (respData?.success && (serverPaymentIntentId || payload?.paymentIntent)) {
+        // Some backends may create and confirm the payment intent server-side and return it
+        const returnedPI = (payload.paymentIntent) ? payload.paymentIntent : { id: serverPaymentIntentId, status: payload?.status, client_secret: payload?.client_secret };
+        onPaymentSuccess({ id: returnedPI.id, status: returnedPI.status || 'unknown', client_secret: returnedPI.client_secret });
+      } else {
+        setError('Payment initialization failed: invalid server response.');
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_err) {
+    } catch (e) {
+  console.error('Payment error', e);
       setError('Payment failed. Please try again.');
     } finally {
       setLoading(false);
@@ -98,34 +129,40 @@ const PaymentForm = ({ totalAmount, onPaymentSuccess }: {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="p-4 border rounded-lg">
-        <CardElement
-          options={{
-            style: {
-              base: {
-                fontSize: '16px',
-                color: '#424770',
-                '::placeholder': {
-                  color: '#aab7c4',
+    <div className="space-y-4">
+      {disabled ? (
+        <div className="p-4 border rounded-lg bg-green-50 text-green-800 font-semibold">Payment completed ✓</div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="p-4 border rounded-lg">
+            <CardElement
+              options={{
+                style: {
+                  base: {
+                    fontSize: '16px',
+                    color: '#424770',
+                    '::placeholder': {
+                      color: '#aab7c4',
+                    },
+                  },
+                  invalid: {
+                    color: '#9e2146',
+                  },
                 },
-              },
-              invalid: {
-                color: '#9e2146',
-              },
-            },
-          }}
-        />
-      </div>
-      {error && <div className="text-red-500 text-sm">{error}</div>}
-      <button
-        type="submit"
-        disabled={!stripe || loading}
-        className="w-full bg-[#EF451C] text-white py-3 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {loading ? 'Processing...' : 'Pay Now'}
-      </button>
-    </form>
+              }}
+            />
+          </div>
+          {error && <div className="text-red-500 text-sm">{error}</div>}
+          <button
+            type="submit"
+            disabled={!stripe || loading || disabled}
+            className="w-full bg-[#EF451C] text-white py-3 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Processing...' : 'Pay Now'}
+          </button>
+        </form>
+      )}
+    </div>
   );
 };
 
@@ -248,10 +285,9 @@ const Checkout: React.FC = () => {
         status: 'pending',
       };
 
-      // For mobile banking, add mobile payment details
+      // For mobile banking, set specific provider (bKash/Nagad) — payment_status remains 'paid' because payment must be completed before placing order
       if (paymentMethod === 'mobile' && mobilePayment) {
         orderData.payment_method = mobilePayment; // 'bkash' or 'nagad'
-        orderData.payment_status = 'processing';
       }
 
       const response = await axiosSecure.post('/orders', orderData);
@@ -489,6 +525,7 @@ const Checkout: React.FC = () => {
                     <Elements stripe={stripePromise}>
                       <PaymentForm
                         totalAmount={totalAmount}
+                        disabled={paymentCompleted}
                         onPaymentSuccess={(paymentIntent) => {
                           setPaymentIntent(paymentIntent.id);
                           setPaymentCompleted(true);
@@ -538,7 +575,8 @@ const Checkout: React.FC = () => {
                             />
                           </div>
                           <button
-                            className="w-full bg-[#EF451C] text-white py-3 rounded-lg hover:opacity-90 font-semibold"
+                            className={`w-full py-3 rounded-lg font-semibold ${paymentCompleted ? 'bg-green-500 text-white' : 'bg-[#EF451C] text-white hover:opacity-90'}`}
+                            disabled={paymentCompleted}
                             onClick={async () => {
                               try {
                                 // Simulating mobile payment verification
@@ -546,18 +584,20 @@ const Checkout: React.FC = () => {
                                   provider: mobilePayment,
                                   amount: totalAmount,
                                 });
-                                
+
                                 if (response.data.success) {
                                   setPaymentIntent(response.data.transactionId);
                                   setPaymentCompleted(true);
                                   toast.success('Payment successful! You can now place your order.');
+                                } else {
+                                  toast.error(response.data.message || 'Payment verification failed.');
                                 }
-                              } catch (_error) {
+                              } catch {
                                 toast.error('Payment verification failed. Please try again.');
                               }
                             }}
                           >
-                            Pay with {mobilePayment.toUpperCase()}
+                            {paymentCompleted ? `${mobilePayment?.toUpperCase()} Paid ✓` : `Pay with ${mobilePayment?.toUpperCase()}`}
                           </button>
                         </div>
                       )}
@@ -629,6 +669,17 @@ const Checkout: React.FC = () => {
                 <div className="flex justify-between text-xl font-bold text-dark-title mb-6">
                   <span>Total</span>
                   <span style={{ color: '#EF451C' }}>৳{totalAmount.toFixed(2)}</span>
+                </div>
+
+                {/* Payment Status Badge */}
+                <div className="mb-4">
+                  {paymentMethod === 'cash' ? (
+                    <div className="px-3 py-2 rounded-lg bg-gray-50 text-gray-700">Payment method: Cash on delivery</div>
+                  ) : paymentCompleted ? (
+                    <div className="px-3 py-2 rounded-lg bg-green-50 text-green-800 font-semibold">Payment: Paid</div>
+                  ) : (
+                    <div className="px-3 py-2 rounded-lg bg-yellow-50 text-yellow-800">Payment: Pending</div>
+                  )}
                 </div>
 
                 {/* Minimum Order Warning */}

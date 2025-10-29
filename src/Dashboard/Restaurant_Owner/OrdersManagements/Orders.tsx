@@ -92,10 +92,22 @@ useEffect(() => {
       if (!email) throw new Error("User email not found");
 
       const res = await axiosSecure.get(`/restaurants/email/${email}`);
-      const restaurant = res.data?.data || res.data; // support both shapes
+      // normalize server response - it may return different shapes:
+      // { data: { ... } }, { data: [...] }, or the object directly
+      const raw = res?.data;
+      // useful debug log (will appear in browser console)
+      // console.debug('fetchRestaurantId response', raw);
+
+      let restaurant: any = raw?.data ?? raw;
+      // if an array was returned, pick first
+      if (Array.isArray(restaurant)) restaurant = restaurant[0];
+      // sometimes nested under .data.data
+      if (!restaurant && raw?.data?.data) restaurant = raw.data.data;
+      if (Array.isArray(restaurant)) restaurant = restaurant[0];
       if (!mounted) return;
 
-      setRestaurantId(restaurant?._id || null);
+      const id = restaurant?._id || restaurant?.id || restaurant?.restaurantId || null;
+      setRestaurantId(id);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch restaurant info.");
