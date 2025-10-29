@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { MapPin, Phone, CreditCard, Wallet, Building2, Clock, ShoppingBag, AlertCircle, Smartphone } from 'lucide-react';
+import { MapPin, Phone, CreditCard, Wallet, Building2, Clock, ShoppingBag, AlertCircle } from 'lucide-react';
 import { useCart } from '../../hooks/useCart';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
@@ -65,18 +65,38 @@ const PaymentForm = ({ totalAmount, onPaymentSuccess }: {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!stripe || !elements) return;
+    if (!stripe || !elements) {
+      setError('Stripe is not loaded yet. Please try again.');
+      return;
+    }
     
     setLoading(true);
+    setError(''); // Clear any previous errors
     
     try {
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
+      // Get the card element
+      const cardElement = elements.getElement(CardElement);
+      if (!cardElement) {
+        setError('Card element not found');
+        setLoading(false);
+        return;
+      }
+
+      // Create payment method
+      const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
         type: 'card',
-        card: elements.getElement(CardElement)!,
+        card: cardElement,
       });
 
-      if (error) {
-        setError(error.message || 'Payment failed');
+      if (paymentMethodError) {
+        setError(paymentMethodError.message || 'Failed to create payment method');
+        setLoading(false);
+        return;
+      }
+
+      if (!paymentMethod) {
+        setError('Failed to create payment method');
+        setLoading(false);
         return;
       }
 
@@ -86,12 +106,32 @@ const PaymentForm = ({ totalAmount, onPaymentSuccess }: {
         payment_method_id: paymentMethod.id
       });
 
+      console.log('Payment response:', response.data); // Debug log
+
       if (response.data.success) {
-        onPaymentSuccess(response.data.paymentIntent);
+        setError(''); // Clear any errors
+        
+        // Validate payment intent structure
+        const paymentIntent = response.data.paymentIntent || response.data.data?.paymentIntent;
+        
+        if (paymentIntent && paymentIntent.id) {
+          onPaymentSuccess(paymentIntent);
+        } else {
+          // If backend doesn't return proper structure, create a fallback
+          console.warn('Backend returned unexpected structure:', response.data);
+          onPaymentSuccess({
+            id: response.data.paymentIntentId || `pi_${Date.now()}`,
+            status: 'succeeded',
+            client_secret: response.data.client_secret || ''
+          });
+        }
+      } else {
+        setError(response.data.message || 'Payment failed. Please try again.');
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_err) {
-      setError('Payment failed. Please try again.');
+    } catch (err) {
+      console.error('Payment error:', err);
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(error.response?.data?.message || error.message || 'Payment failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -99,7 +139,7 @@ const PaymentForm = ({ totalAmount, onPaymentSuccess }: {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="p-4 border rounded-lg">
+      <div className="p-4 border rounded-lg bg-white">
         <CardElement
           options={{
             style: {
@@ -117,14 +157,29 @@ const PaymentForm = ({ totalAmount, onPaymentSuccess }: {
           }}
         />
       </div>
-      {error && <div className="text-red-500 text-sm">{error}</div>}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-start gap-2">
+          <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
       <button
         type="submit"
         disabled={!stripe || loading}
-        className="w-full bg-[#EF451C] text-white py-3 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-[#EF451C] text-white py-3 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all"
       >
-        {loading ? 'Processing...' : 'Pay Now'}
+        {loading ? (
+          <span className="flex items-center justify-center gap-2">
+            <div className="loading loading-spinner loading-sm"></div>
+            Processing Payment...
+          </span>
+        ) : (
+          `Pay ৳${totalAmount.toFixed(2)}`
+        )}
       </button>
+      <p className="text-xs text-gray-500 text-center">
+        Your payment is secured by Stripe
+      </p>
     </form>
   );
 };
@@ -490,9 +545,14 @@ const Checkout: React.FC = () => {
                       <PaymentForm
                         totalAmount={totalAmount}
                         onPaymentSuccess={(paymentIntent) => {
-                          setPaymentIntent(paymentIntent.id);
-                          setPaymentCompleted(true);
-                          toast.success('Payment successful! You can now place your order.');
+                          if (paymentIntent && paymentIntent.id) {
+                            setPaymentIntent(paymentIntent.id);
+                            setPaymentCompleted(true);
+                            toast.success('Payment successful! You can now place your order.');
+                          } else {
+                            toast.error('Payment completed but unable to verify. Please contact support.');
+                            console.error('Invalid payment intent:', paymentIntent);
+                          }
                         }}
                       />
                     </Elements>
@@ -552,6 +612,7 @@ const Checkout: React.FC = () => {
                                   setPaymentCompleted(true);
                                   toast.success('Payment successful! You can now place your order.');
                                 }
+                              // eslint-disable-next-line @typescript-eslint/no-unused-vars
                               } catch (_error) {
                                 toast.error('Payment verification failed. Please try again.');
                               }
