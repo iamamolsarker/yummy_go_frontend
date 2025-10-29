@@ -196,9 +196,7 @@ export default function RiderManagement() {
                                                 <div className="ml-4">
                                                     <div className="font-semibold">{rider.name}</div>
                                                     <div className="text-sm text-gray-500">{rider.email}</div>
-                                                    <div className="text-xs text-gray-400">
-                                                        📞 {rider.phone || "N/A"} | ⭐ {rider.rating}
-                                                    </div>
+                                                    
                                                 </div>
                                             </div>
                                         </td>
