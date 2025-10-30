@@ -17,7 +17,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
-import type { JSX, ReactNode } from 'react/jsx-runtime';
+import type { JSX } from 'react/jsx-runtime';
+import type { ReactNode } from 'react';
 
 // --- Type Definitions ---
 type DeliveryStatus = 'assigned' | 'picked_up' | 'delivered' | 'cancelled' | string;
