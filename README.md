@@ -7,7 +7,7 @@
   ![Vite](https://img.shields.io/badge/Vite-7.1-646CFF?style=for-the-badge&logo=vite&logoColor=white)
   ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
   
-  [Live Demo](https://yummy-go.vercel.app) • [API Documentation](./src/YummyGo_API_Routes_Guide.md) • [Report Bug](https://github.com/iamamolsarker/yummy_go_frontend/issues)
+  [Live Demo](https://yummy-go-code-warriors.vercel.app/)  • [Report Bug](https://github.com/iamamolsarker/yummy_go_frontend/issues)
 </div>
 
 ---
@@ -15,6 +15,7 @@
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
+- [Screenshots](#-screenshots)
 - [Features](#-features)
 - [Tech Stack](#-tech-stack)
 - [Getting Started](#-getting-started)
@@ -43,6 +44,24 @@
 - 🗺️ **Real-time Tracking** - Leaflet maps for delivery tracking
 - 📊 **Analytics Dashboard** - Comprehensive business insights
 - 🌐 **Multi-role System** - Separate dashboards for different user types
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+### 🏠 Homepage - Hero Section
+*Fast, fresh food delivered right to your door*
+
+![Homepage Hero](./public/screenshots/hero-section.png)
+
+### 🍽️ Food Gallery
+*Explore our delicious collection of dishes*
+
+![Food Gallery](./public/screenshots/food-gallery.png)
+
+</div>
 
 ---
 
