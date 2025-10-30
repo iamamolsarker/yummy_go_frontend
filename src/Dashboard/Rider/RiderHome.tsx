@@ -63,7 +63,7 @@ const MenuCard: React.FC<MenuCardProps> = ({ icon, title, description, path }) =
     // Reverted padding and hover effects
     <div onClick={() => navigate(path)} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-lg hover:border-[#EF451C] transition-all duration-300 cursor-pointer group">
       {/* Reverted icon size */}
-      <div className="text-[#EF451C] mb-3">{React.cloneElement(icon as React.ReactElement, { size: 28 })}</div>
+      <div className="text-[#EF451C] mb-3">{React.cloneElement(icon as React.ReactElement, { size: 28 } as any)}</div>
       {/* Reverted text sizes */}
       <h3 className="font-bold text-slate-800 text-lg mb-1">{title}</h3>
       <p className="text-sm text-slate-500 mb-4">{description}</p>

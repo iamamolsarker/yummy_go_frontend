@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useEffect, useState, type ReactNode } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form"; // Removed Controller for simplicity unless needed
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -96,12 +96,12 @@ const FoodManForm: React.FC = () => {
                         if (!isMounted) return;
                         const userData = res.data && 'data' in res.data ? res.data.data : res.data;
                         console.log("Fetched User DB Data:", userData);
-                        if (userData) {
-                            setValue("phone", userData.phone || user.phoneNumber || "");
-                            setValue("city", userData.city || "");
-                            const dob = userData.dob ? new Date(userData.dob).toISOString().split('T')[0] : "";
+                        if (userData && typeof userData === 'object' && 'phone' in userData) {
+                            setValue("phone", (userData as any).phone || user.phoneNumber || "");
+                            setValue("city", (userData as any).city || "");
+                            const dob = (userData as any).dob ? new Date((userData as any).dob).toISOString().split('T')[0] : "";
                             setValue("dob", dob);
-                            setValue("nid_number", userData.nid || "");
+                            setValue("nid_number", (userData as any).nid || "");
                         } else {
                             console.warn("User data structure from API might be unexpected or empty.");
                         }

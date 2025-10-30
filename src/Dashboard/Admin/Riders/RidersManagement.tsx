@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useMemo, useEffect, ReactNode } from "react";
+import { useState, useMemo, useEffect, type ReactNode } from "react";
 import {
-    Search, Star, MapPin, Edit, Trash2, ServerCrash, UtensilsCrossed,
+    Search, Star, ServerCrash, UtensilsCrossed, Trash2,
     CheckCircle, XCircle, Clock, Loader2, UserCheck, UserX, AlertTriangle,
     ChevronDown
 } from "lucide-react";
@@ -44,7 +44,7 @@ const getStatusDisplay = (status?: RiderStatus): { text: string; className: stri
         case "rejected":
             return { text: "Rejected", className: "bg-red-100 text-red-800", icon: <UserX size={14} /> };
         default:
-            return { text: status ? status.replace(/_/g, ' ') : "Unknown", className: "bg-gray-100 text-gray-600", icon: <AlertTriangle size={14} /> };
+            return { text: status ? String(status).replace(/_/g, ' ') : "Unknown", className: "bg-gray-100 text-gray-600", icon: <AlertTriangle size={14} /> };
     }
 };
 
@@ -58,14 +58,14 @@ const getInitials = (name: string = ""): string => {
     return name.substring(0, 2).toUpperCase();
 };
 
-const formatDate = (dateString?: string): string => {
-    if (!dateString) return "N/A";
-    try {
-        return new Date(dateString).toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' });
-    } catch {
-        return "Invalid Date";
-    }
-};
+// const formatDate = (dateString?: string): string => {
+//     if (!dateString) return "N/A";
+//     try {
+//         return new Date(dateString).toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' });
+//     } catch {
+//         return "Invalid Date";
+//     }
+// };
 
 
 // --- Main Component ---
