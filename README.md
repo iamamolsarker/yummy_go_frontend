@@ -54,12 +54,12 @@
 ### 🏠 Homepage - Hero Section
 *Fast, fresh food delivered right to your door*
 
-![Homepage Hero](./public/screenshots/hero-section.png)
+![Homepage Hero](https://i.ibb.co.com/Mx4S824s/Yummy-go-hero.png)
 
 ### 🍽️ Food Gallery
 *Explore our delicious collection of dishes*
 
-![Food Gallery](./public/screenshots/food-gallery.png)
+![Food Gallery](https://i.ibb.co.com/LhJ9ysGV/Yummy-go-food-gallery.png)
 
 </div>
 
