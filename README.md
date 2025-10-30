@@ -653,9 +653,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 📞 Support & Contact
 
-- **Developer:** Amol Sarker
-- **GitHub:** [@iamamolsarker](https://github.com/iamamolsarker)
-- **Email:** [support@yummygo.com](mailto:support@yummygo.com)
+- **Email:** [support@yummygo.com](team.codewarriors25@gmail.com)
 - **Issues:** [GitHub Issues](https://github.com/iamamolsarker/yummy_go_frontend/issues)
 
 ---
@@ -674,7 +672,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ---
 
 <div align="center">
-  <p>Made with ❤️ by <a href="https://github.com/iamamolsarker">Amol Sarker</a></p>
   <p>⭐ Star this repo if you found it helpful!</p>
   
   [![GitHub Stars](https://img.shields.io/github/stars/iamamolsarker/yummy_go_frontend?style=social)](https://github.com/iamamolsarker/yummy_go_frontend/stargazers)
