@@ -56,7 +56,7 @@ const Forbidden: React.FC = () => {
         </div>
 
         {/* Debug Info (only in development) */}
-        {process.env.NODE_ENV === 'development' && from && (
+        {import.meta.env.DEV && from && (
           <div className="mt-4 p-3 bg-gray-100 rounded-lg text-left">
             <p className="text-xs text-gray-600">
               <strong>Debug Info:</strong><br />

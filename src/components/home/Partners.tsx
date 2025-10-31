@@ -5,12 +5,12 @@ const partners = [
   {
     name: "Pizza Hut",
     logo: "https://i.ibb.co.com/zTwLYTgc/Pizza-Hut-international-logo-2014-svg.png",
-    url: "https://www.pizzahut.com/",
+    url: "https://www.pizzahutbd.com/",
   },
   {
     name: "KFC",
     logo: "https://i.ibb.co.com/w2TzBcP/Kfc-Logo-PNG-Image.png",
-    url: "https://www.kfc.com/",
+    url: "https://www.kfcbd.com/",
   },
   {
     name: "Domino's",
@@ -35,7 +35,12 @@ const partners = [
   {
     name: "PizzaBurg",
     logo: "https://i.ibb.co.com/msFqTBx/images-1.png",
-    url: "https://pizzaburg.com.bd/", 
+    url: "https://pizzaburg.com/", 
+  },
+  {
+    name: "Banoful",
+    logo: "https://i.ibb.co.com/35C8ncm9/banoful-logo-png-seeklogo-367842.png",
+    url: "https://banofulgroup.com", 
   },
 ];
 
@@ -45,7 +50,7 @@ export default function PartnersSection() {
     <section className="py-16 bg-[#fffaf5] overflow-hidden">
       <div className="mx-auto px-4 text-center">
         <Fade className="text-center mb-12" cascade>
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">
+          <h2 className="text-[48px] font-extrabold text-[#363636] ">
             Our Trusted Partners
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -62,7 +67,7 @@ export default function PartnersSection() {
                 href={partner.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-white mx-4 w-[180px] sm:w-[200px] rounded-xl shadow hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center p-4"
+                className="bg-white mx-4 w-[200px] sm:w-[220px] rounded-xl shadow hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center p-4"
               >
                 <img
                   src={partner.logo}

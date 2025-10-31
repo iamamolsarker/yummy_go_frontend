@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router";
@@ -11,6 +12,7 @@ import useAuth from "../hooks/useAuth";
 interface UserInfo {
   name: string | null;
   email: string | null;
+  role: string; // Backend 'createUser' expects a role
 }
 
 // Define location state interface
@@ -19,35 +21,41 @@ interface LocationState {
 }
 
 const SocialLogin: React.FC = () => {
-  const { logInWithGoogle, logInWithGoogleRedirect } = useAuth();
+  const { logInWithGoogle } = useAuth();
   const location = useLocation() as { state?: LocationState };
   const axiosPublic = useAxios();
   const navigate = useNavigate();
 
   const handleGoogleSignIn = (): void => {
-    // Try popup first, fallback to redirect if COOP issues
     logInWithGoogle()
       .then(async (result) => {
         const user: User = result.user;
-        console.log(user);
+        console.log("Firebase User:", user);
         
-        // Create proper user data structure for database
+        // Create proper user data structure for the backend
         const userInfo: UserInfo = {
           name: user.displayName,
           email: user.email,
-        
+          role: 'user', // Set default role as per backend logic
         };
 
         try {
           const userRes = await axiosPublic.post("/users", userInfo);
-          console.log(userRes.data);
-        } catch (dbError) {
-          console.warn("Database save failed (user might already exist):", dbError);
-          // Don't fail the login if database save fails
+          console.log("User saved/retrieved from DB:", userRes.data);
+        } catch (dbError: any) {
+          // It's okay if the user already exists (often a 400 Bad Request)
+          if (dbError.response?.data?.message?.includes("already exists")) {
+            console.warn("User already exists in DB, proceeding with login.");
+          } else if (dbError.response) {
+            console.error("Database save failed:", dbError.response.data);
+          } else {
+            console.error("Database request failed:", dbError.message);
+          }
         }
-        // Check if there's a redirect location from state
+        
         const redirectTo: string = location.state?.from || "/";
-        navigate(redirectTo);
+        navigate(redirectTo, { replace: true });
+
         Swal.fire({
           icon: "success",
           title: "Login successful!",
@@ -59,22 +67,9 @@ const SocialLogin: React.FC = () => {
       .catch((error: Error) => {
         console.error("Error during Google sign-in:", error);
         
-        // Check if it's a COOP error and try redirect as fallback
-        if (error.message.includes("Cross-Origin-Opener-Policy") || 
-            error.message.includes("popup-blocked")) {
-          console.log("Popup failed, trying redirect method...");
-          // Use redirect as fallback
-          logInWithGoogleRedirect();
-          return;
-        }
-        
-        // Handle other Firebase auth errors
         let errorMessage = "Login failed. Please try again.";
-        
         if (error.message.includes("popup-closed-by-user")) {
           errorMessage = "Login was cancelled.";
-        } else if (error.message.includes("unauthorized-domain")) {
-          errorMessage = "This domain is not authorized for Google sign-in.";
         }
         
         Swal.fire({
@@ -84,6 +79,7 @@ const SocialLogin: React.FC = () => {
         });
       });
   };
+
   return (
     <div className="w-full space-y-4">
       <motion.button
@@ -106,7 +102,7 @@ const SocialLogin: React.FC = () => {
             <path d="m0 0H512V512H0" fill="#fff"></path>
             <path
               fill="#34a853"
-              d="M153 292c30 82 118 95 171 60h62v48A192 192 0 0190 341"
+              d="m153 292c30 82 118 95 171 60h62v48A192 192 0 0190 341"
             ></path>
             <path
               fill="#4285f4"
@@ -129,3 +125,4 @@ const SocialLogin: React.FC = () => {
 };
 
 export default SocialLogin;
+

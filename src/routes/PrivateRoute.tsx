@@ -16,7 +16,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
-          <div className="loading loading-spinner loading-xl text-primary"></div>
+          <div className="loading loading-spinner loading-xl" style={{ color: '#EF451C' }}></div>
           <p className="text-gray-600">Loading...</p>
         </div>
       </div>

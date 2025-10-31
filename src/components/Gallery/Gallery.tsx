@@ -43,19 +43,19 @@ const Gallery: React.FC = () => {
         <section className="bg-gray-50 py-20">
             <div className="container mx-auto w-[90%]">
                 <div className="text-center">
-                    {/* Title with solid dark color */}
-                    <h2 className="text-[48px] font-extrabold text-[#363636]">
+                    <h2 className="text-3xl md:text-5xl font-bold text-gray-800 mb-4 leading-tight">
                         Our Food Gallery
                     </h2>
-                    {/* Paragraph with new text color and font size */}
-                    <p className="mt-4 text-[16px] text-[#7c848a]">Explore the delicious dishes we have to offer.</p>
+                    <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-8">
+                        Explore the delicious dishes we have to offer.
+                    </p>
                 </div>
                 <div className="mt-16 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {galleryData.map((item) => (
-                        <GalleryItem 
-                            key={item.id} 
-                            src={item.src} 
-                            alt={item.alt} 
+                        <GalleryItem
+                            key={item.id}
+                            src={item.src}
+                            alt={item.alt}
                             category={item.category}
                             title={item.title}
                         />

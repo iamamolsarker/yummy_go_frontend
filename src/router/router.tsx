@@ -14,9 +14,27 @@ import Login from "../Authentication/Login";
 import PrivateRoute from "../routes/PrivateRoute";
 import DashboardHome from "../Dashboard/DashboardHome";
 import UserManagement from "../Dashboard/Admin/userManegement/UserManagement";
-import Restaurants from "../pages/Restaurants/Restaurants";
 import RiderManagement from "../Dashboard/Admin/Riders/RidersManagement";
+import OrdersManagement from "../Dashboard/Admin/Orders/OrdersManagement";
 import RestaurantManagement from "../Dashboard/Admin/Restaurants/RestaurantManagement";
+import RiderOrders from "../Dashboard/Rider/RiderOrders";
+import RiderHistory from "../Dashboard/Rider/RiderHistory";
+import RiderEarnings from "../Dashboard/Rider/RiderEarnings";
+import RiderRoutes from "../Dashboard/Rider/RiderRoutes";
+import RiderPerformance from "../Dashboard/Rider/RiderPerformance";
+import SettingsPage from "../pages/profilePage/SettingsPage";
+import Restaurants from "../pages/Restaurants/Restaurants";
+import RestaurantDetails from "../pages/Restaurants/RestaurantDetails";
+import Checkout from "../pages/checkout/Checkout";
+import OrderConfirmation from "../pages/order-confirmation/OrderConfirmation";
+import Analytics from "../Dashboard/Admin/Analytics/Analytics";
+import Reports from "../Dashboard/Admin/Reports/Reports";
+import MenuManagement from "../Dashboard/Restaurant_Owner/MenuManagement/MenuManagement";
+import RestaurantOrdersManagement from "../Dashboard/Restaurant_Owner/OrdersManagements/Orders";
+import RevenuePage from "../Dashboard/Restaurant_Owner/Revenue/RevenuePage";
+import RestaurantsAnalyticsPage from "../Dashboard/Restaurant_Owner/Analytics/RstaurantsAnalytics";
+import ReviewsPage from "../Dashboard/Restaurant_Owner/Reviews/Reviews";
+
 
 
 
@@ -25,6 +43,7 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayOut />,
+    errorElement: <Error />,
     children: [
       {
         index: true,
@@ -51,8 +70,32 @@ export const router = createBrowserRouter([
         element: <ProfilePage />
       },
       {
+        path: "settings",
+        element: <SettingsPage />
+      },
+      {
         path: "restaurants",
         element: <Restaurants />
+      },
+      {
+        path: "restaurants/:id",
+        element: <RestaurantDetails />
+      },
+      {
+        path: "checkout",
+        element: (
+          <PrivateRoute>
+            <Checkout />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: "order-confirmation/:orderId",
+        element: (
+          <PrivateRoute>
+            <OrderConfirmation />
+          </PrivateRoute>
+        )
       },
 
     ]
@@ -71,16 +114,68 @@ export const router = createBrowserRouter([
       },
       {
         path: "admin/users",
-        element: <UserManagement/>
+        element: <UserManagement />
       },
       {
         path: "admin/riders",
         element: <RiderManagement></RiderManagement>
       },
       {
+        path: "admin/orders",
+        element: <OrdersManagement></OrdersManagement>
+      },
+      {
         path: "admin/restaurants",
-        element: <RestaurantManagement/>
-      }
+        element: <RestaurantManagement />
+      },
+      {
+        path: "admin/analytics",
+        element: <Analytics />
+      },
+      {
+        path: "admin/reports",
+        element: <Reports />
+      },
+      {
+        path: "rider/orders",
+        element: <RiderOrders />
+      },
+      {
+        path: "rider/history",
+        element: <RiderHistory />
+      },
+      {
+        path: "rider/earnings",
+        element: <RiderEarnings />
+      },
+      {
+        path: "rider/routes",
+        element: <RiderRoutes />
+      },
+      {
+        path: "rider/performance",
+        element: <RiderPerformance />
+      },
+      {
+        path: "restaurant/menu",
+        element: <MenuManagement />
+      },
+      {
+        path: "restaurant/orders",
+        element: <RestaurantOrdersManagement></RestaurantOrdersManagement>
+      },
+      {
+        path: "restaurant/revenue",
+        element: <RevenuePage></RevenuePage>
+      },
+      {
+        path: "restaurant/reviews",
+        element: <ReviewsPage></ReviewsPage>
+      },
+      {
+        path: "restaurant/analytics",
+        element: <RestaurantsAnalyticsPage></RestaurantsAnalyticsPage>
+      },
 
     ]
   },
